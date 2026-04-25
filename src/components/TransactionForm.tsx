@@ -1,40 +1,78 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { createTransaction } from '@/actions/transaction.action';
+import { Transaction } from '@/lib/types';
 
 export default function TransactionForm({ onSuccess }: { onSuccess?: () => void }) {
-  const [isPending, startTransition] = useTransition();
   const [amount, setAmount] = useState<string>('100');
   const [description, setDescription] = useState('Grocery shopping');
+  const queryClient = useQueryClient();
   
   const [errors, setErrors] = useState<{ general?: string; fields?: Record<string, string[]> }>({});
   const [success, setSuccess] = useState<string | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // OPTIMISTIC UI: useMutation
+  const mutation = useMutation({
+    mutationFn: async (data: { amount: number; description: string }) => {
+      const result = await createTransaction(data);
+      if (!result.success) throw result;
+      return result.data;
+    },
+    onMutate: async (newTx) => {
+      // Cancel refetches so they don't overwrite our optimistic update
+      await queryClient.cancelQueries({ queryKey: ['transactions'] });
+
+      // Snapshot the previous value
+      const previousTxs = queryClient.getQueryData<Transaction[]>(['transactions']);
+
+      // Optimistically update to the new value
+      if (previousTxs) {
+        queryClient.setQueryData<Transaction[]>(['transactions'], [
+          {
+            id: 'optimistic-' + Date.now(),
+            amount: newTx.amount,
+            description: newTx.description,
+            status: 'completed',
+            created_at: new Date().toISOString(),
+          },
+          ...previousTxs,
+        ]);
+      }
+
+      return { previousTxs };
+    },
+    onError: (err: any, newTx, context) => {
+      // Rollback on error
+      if (context?.previousTxs) {
+        queryClient.setQueryData(['transactions'], context.previousTxs);
+      }
+      
+      if (err.validationErrors) {
+        setErrors({ general: 'Validation failed', fields: err.validationErrors });
+      } else {
+        setErrors({ general: err.error || 'Something went wrong' });
+      }
+    },
+    onSettled: () => {
+      // Always refetch after error or success to sync with server
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+    },
+    onSuccess: () => {
+      if (onSuccess) onSuccess();
+      setSuccess('Transaction saved successfully!');
+      setAmount('');
+      setDescription('');
+      setTimeout(() => setSuccess(null), 3000);
+    },
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setErrors({});
     setSuccess(null);
-    
-    startTransition(async () => {
-      const result = await createTransaction({ 
-        amount: parseFloat(amount), 
-        description 
-      });
-
-      if (!result.success) {
-        setErrors({
-          general: result.error,
-          fields: result.validationErrors
-        });
-      } else {
-        if (onSuccess) onSuccess();
-        setSuccess(result.message || 'Success!');
-        setAmount('');
-        setDescription('');
-        setTimeout(() => setSuccess(null), 3000);
-      }
-    });
+    mutation.mutate({ amount: parseFloat(amount), description });
   };
 
   return (
@@ -87,9 +125,6 @@ export default function TransactionForm({ onSuccess }: { onSuccess?: () => void 
               required
             />
           </div>
-          {errors.fields?.amount && (
-            <p className="mt-1 text-xs text-red-500 font-medium px-1">{errors.fields.amount[0]}</p>
-          )}
         </div>
 
         <div className="space-y-2">
@@ -104,27 +139,24 @@ export default function TransactionForm({ onSuccess }: { onSuccess?: () => void 
             placeholder="What's this for?"
             required
           />
-          {errors.fields?.description && (
-            <p className="mt-1 text-xs text-red-500 font-medium px-1">{errors.fields.description[0]}</p>
-          )}
         </div>
 
         <button
           type="submit"
-          disabled={isPending}
+          disabled={mutation.isPending}
           className={`w-full py-4 px-6 rounded-2xl text-white font-black tracking-tight transition-all shadow-lg active:scale-[0.98] ${
-            isPending 
+            mutation.isPending 
               ? 'bg-gray-400 cursor-not-allowed shadow-none' 
               : 'bg-gray-900 hover:bg-black shadow-gray-200 hover:shadow-gray-300'
           }`}
         >
-          {isPending ? (
+          {mutation.isPending ? (
             <span className="flex items-center justify-center gap-2">
               <svg className="animate-spin h-5 w-5 text-white" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
-              Processing...
+              Optimizing...
             </span>
           ) : 'Submit Transaction'}
         </button>

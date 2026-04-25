@@ -2,18 +2,19 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { getTransactions } from '@/actions/transaction.action';
+import { incrementRequestCount } from '@/hooks/use-request-counter';
 
 export default function TransactionTablePolling() {
   const { data, isLoading, error, isRefetching } = useQuery({
     queryKey: ['transactions'],
     queryFn: async () => {
+      incrementRequestCount('polling');
       const result = await getTransactions();
       if (!result.success) throw new Error(result.error);
       return result.data || [];
     },
-    // The Core Polling Logic
     refetchInterval: 5000, 
-    staleTime: 0, // Always fetch on interval
+    staleTime: 0, 
   });
 
   if (isLoading && !data) {
@@ -27,7 +28,6 @@ export default function TransactionTablePolling() {
 
   return (
     <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 overflow-hidden relative">
-      {/* Visual Indicator of Fetching */}
       {isRefetching && (
         <div className="absolute top-0 left-0 right-0 h-1 bg-purple-500 animate-pulse z-10"></div>
       )}

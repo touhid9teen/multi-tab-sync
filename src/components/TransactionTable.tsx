@@ -3,22 +3,72 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { getTransactions } from '@/actions/transaction.action';
 import { useBroadcastSync } from '@/hooks/use-broadcast-sync';
-import { useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { incrementRequestCount } from '@/hooks/use-request-counter';
 
 export default function TransactionTable() {
   const queryClient = useQueryClient();
+  const [isLeader, setIsLeader] = useState(false);
 
+  // 1. LEADER ELECTION LOGIC
+  useEffect(() => {
+    const electionChannel = new BroadcastChannel('leader_election');
+    const myId = Math.random().toString(36).substring(7);
+    let leaderId: string | null = null;
+
+    const claimLeadership = () => {
+      leaderId = myId;
+      setIsLeader(true);
+      electionChannel.postMessage({ type: 'IAM_LEADER', id: myId });
+    };
+
+    electionChannel.onmessage = (msg) => {
+      if (msg.data.type === 'IAM_LEADER') {
+        if (msg.data.id !== myId) {
+          leaderId = msg.data.id;
+          setIsLeader(false);
+        }
+      } else if (msg.data.type === 'WHO_IS_LEADER') {
+        if (isLeader) {
+          electionChannel.postMessage({ type: 'IAM_LEADER', id: myId });
+        }
+      }
+    };
+
+    // Ask if there's a leader
+    electionChannel.postMessage({ type: 'WHO_IS_LEADER' });
+    
+    // If no one responds in 500ms, I'm the leader
+    const timeout = setTimeout(() => {
+      if (!leaderId) claimLeadership();
+    }, 500);
+
+    return () => {
+      electionChannel.close();
+      clearTimeout(timeout);
+    };
+  }, [isLeader]);
+
+  // 2. RECEIVER LOGIC
   const onSyncMessage = useCallback((msg: string) => {
     if (msg === 'REFETCH') {
-      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      // ONLY THE LEADER FETCHES (Optimization)
+      if (isLeader) {
+        console.log('[BROADCAST_LEADER] Leadership active: Triggering refetch');
+        queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      } else {
+        console.log('[BROADCAST_FOLLOWER] Leadership passive: Skipping refetch');
+      }
     }
-  }, [queryClient]);
+  }, [queryClient, isLeader]);
 
   useBroadcastSync(onSyncMessage);
 
+  // 3. FETCH LOGIC
   const { data, isLoading, error, refetch, isRefetching } = useQuery({
     queryKey: ['transactions'],
     queryFn: async () => {
+      incrementRequestCount('broadcast');
       const result = await getTransactions();
       if (!result.success) throw new Error(result.error);
       return result.data || [];
@@ -36,10 +86,15 @@ export default function TransactionTable() {
   }
 
   return (
-    <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 overflow-hidden">
+    <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 overflow-hidden relative">
       <div className="p-6 border-b border-gray-50 bg-gray-50/30 flex justify-between items-center">
         <div className="space-y-0.5">
-          <h2 className="text-lg font-bold text-gray-900 tracking-tight">Recent Activity</h2>
+          <div className="flex items-center gap-2">
+            <h2 className="text-lg font-bold text-gray-900 tracking-tight">Recent Activity</h2>
+            {isLeader && (
+              <span className="text-[9px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-black uppercase tracking-widest border border-amber-200">Leader</span>
+            )}
+          </div>
           <div className="flex items-center gap-2">
              <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div>
              <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Neon SQL Instance</p>
@@ -50,7 +105,6 @@ export default function TransactionTable() {
           className={`p-2.5 rounded-xl transition-all ${
             isRefetching ? 'bg-blue-50 text-blue-600' : 'bg-white border border-gray-100 text-gray-400 hover:text-gray-900 hover:border-gray-200 shadow-sm'
           }`}
-          title="Manual Sync"
         >
           <svg className={`w-5 h-5 ${isRefetching ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
