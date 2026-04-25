@@ -21,20 +21,16 @@ export default function TransactionForm({ onSuccess }: { onSuccess?: () => void 
       return result.data;
     },
     onMutate: async (newTx) => {
-      // Cancel refetches so they don't overwrite our optimistic update
       await queryClient.cancelQueries({ queryKey: ['transactions'] });
-
-      // Snapshot the previous value
       const previousTxs = queryClient.getQueryData<Transaction[]>(['transactions']);
 
-      // Optimistically update to the new value
       if (previousTxs) {
         queryClient.setQueryData<Transaction[]>(['transactions'], [
           {
             id: 'optimistic-' + Date.now(),
             amount: newTx.amount,
             description: newTx.description,
-            status: 'completed',
+            status: 'pending', // MARKED AS PENDING
             created_at: new Date().toISOString(),
           },
           ...previousTxs,
@@ -44,7 +40,6 @@ export default function TransactionForm({ onSuccess }: { onSuccess?: () => void 
       return { previousTxs };
     },
     onError: (err: any, newTx, context) => {
-      // Rollback on error
       if (context?.previousTxs) {
         queryClient.setQueryData(['transactions'], context.previousTxs);
       }
@@ -56,7 +51,6 @@ export default function TransactionForm({ onSuccess }: { onSuccess?: () => void 
       }
     },
     onSettled: () => {
-      // Always refetch after error or success to sync with server
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
     },
     onSuccess: () => {

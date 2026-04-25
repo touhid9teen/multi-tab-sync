@@ -35,10 +35,7 @@ export default function TransactionTable() {
       }
     };
 
-    // Ask if there's a leader
     electionChannel.postMessage({ type: 'WHO_IS_LEADER' });
-    
-    // If no one responds in 500ms, I'm the leader
     const timeout = setTimeout(() => {
       if (!leaderId) claimLeadership();
     }, 500);
@@ -52,12 +49,8 @@ export default function TransactionTable() {
   // 2. RECEIVER LOGIC
   const onSyncMessage = useCallback((msg: string) => {
     if (msg === 'REFETCH') {
-      // ONLY THE LEADER FETCHES (Optimization)
       if (isLeader) {
-        console.log('[BROADCAST_LEADER] Leadership active: Triggering refetch');
         queryClient.invalidateQueries({ queryKey: ['transactions'] });
-      } else {
-        console.log('[BROADCAST_FOLLOWER] Leadership passive: Skipping refetch');
       }
     }
   }, [queryClient, isLeader]);
@@ -132,9 +125,17 @@ export default function TransactionTable() {
           </div>
         ) : (
           data?.map((t) => (
-            <div key={t.id} className="p-6 hover:bg-gray-50/80 transition-all flex justify-between items-center group">
+            <div key={t.id} className={`p-6 transition-all flex justify-between items-center group ${t.status === 'pending' ? 'opacity-50 grayscale bg-gray-50/50' : 'hover:bg-gray-50/80'}`}>
               <div className="space-y-1">
-                <p className="font-bold text-gray-900 group-hover:text-blue-600 transition-colors tracking-tight">{t.description}</p>
+                <p className="font-bold text-gray-900 group-hover:text-blue-600 transition-colors tracking-tight flex items-center gap-2">
+                  {t.description}
+                  {t.status === 'pending' && (
+                    <svg className="animate-spin h-3 w-3 text-blue-500" viewBox="0 0 24 24">
+                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                  )}
+                </p>
                 <div className="flex items-center gap-3">
                   <span className="text-[10px] text-gray-400 bg-gray-100 px-2 py-1 rounded-md font-black tracking-tighter">ID: {t.id}</span>
                   <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
@@ -147,7 +148,9 @@ export default function TransactionTable() {
                   <span className="text-xs font-bold text-gray-300 mr-1">$</span>
                   {Number(t.amount).toLocaleString(undefined, { minimumFractionDigits: 2 })}
                 </p>
-                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-black bg-blue-50 text-blue-600 uppercase tracking-widest border border-blue-100/50">
+                <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border border-blue-100/50 ${
+                  t.status === 'pending' ? 'bg-blue-100 text-blue-700 animate-pulse' : 'bg-blue-50 text-blue-600'
+                }`}>
                   {t.status}
                 </span>
               </div>

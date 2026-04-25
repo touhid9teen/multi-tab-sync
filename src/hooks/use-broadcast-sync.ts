@@ -2,42 +2,26 @@
 
 import { useEffect, useCallback } from 'react';
 
-type SyncMessage = 'REFETCH' | 'PING';
-
-export function useBroadcastSync(onMessage?: (msg: SyncMessage) => void) {
-  const channelName = 'transaction_sync';
-
-  const broadcast = useCallback((message: SyncMessage) => {
-    const channel = new BroadcastChannel(channelName);
-    channel.postMessage(message);
-    
-    const logContainer = document.getElementById('sync-log-container');
-    if (logContainer) {
-      const logEntry = document.createElement('div');
-      logEntry.className = 'py-1 border-b border-gray-50 flex justify-between text-blue-600';
-      logEntry.innerHTML = `<span>SENT: ${message}</span> <span class="opacity-50">${new Date().toLocaleTimeString()}</span>`;
-      logContainer.prepend(logEntry);
-    }
-    
-    channel.close();
-  }, []);
-
+export function useBroadcastSync(onMessage?: (msg: string) => void) {
   useEffect(() => {
-    const channel = new BroadcastChannel(channelName);
+    const channel = new BroadcastChannel('transaction_sync');
 
     channel.onmessage = (event) => {
-      const msg = event.data as SyncMessage;
+      const msg = event.data;
+      const timestamp = new Date().toLocaleTimeString('en-GB', { hour12: false });
       
+      // Update UI Log (Shared between tabs)
       const logContainer = document.getElementById('sync-log-container');
       if (logContainer) {
-        // Flash the container
-        logContainer.classList.remove('animate-flash');
-        void logContainer.offsetWidth; // Trigger reflow
-        logContainer.classList.add('animate-flash');
-
         const logEntry = document.createElement('div');
-        logEntry.className = 'py-1 border-b border-gray-50 flex justify-between text-indigo-600 font-bold';
-        logEntry.innerHTML = `<span>RECV: ${msg}</span> <span class="opacity-50 font-normal">${new Date().toLocaleTimeString()}</span>`;
+        logEntry.className = 'py-2 border-b border-gray-50 flex justify-between items-center text-indigo-600 font-bold animate-flash';
+        logEntry.innerHTML = `
+          <div className="flex flex-col">
+            <span className="text-[10px] text-gray-400 uppercase tracking-widest font-black">Received Signal</span>
+            <span>[${timestamp}] ${msg}</span>
+          </div>
+          <span className="opacity-50 font-normal text-[10px]">SYNC_OK</span>
+        `;
         logContainer.prepend(logEntry);
       }
 
@@ -50,6 +34,29 @@ export function useBroadcastSync(onMessage?: (msg: SyncMessage) => void) {
       channel.close();
     };
   }, [onMessage]);
+
+  const broadcast = useCallback((msg: string) => {
+    const channel = new BroadcastChannel('transaction_sync');
+    const timestamp = new Date().toLocaleTimeString('en-GB', { hour12: false });
+
+    channel.postMessage(msg);
+    channel.close();
+
+    // Update UI Log (For the sender)
+    const logContainer = document.getElementById('sync-log-container');
+    if (logContainer) {
+      const logEntry = document.createElement('div');
+      logEntry.className = 'py-2 border-b border-gray-50 flex justify-between items-center text-blue-600';
+      logEntry.innerHTML = `
+        <div className="flex flex-col">
+          <span className="text-[10px] text-gray-400 uppercase tracking-widest font-black">Dispatched Signal</span>
+          <span>[${timestamp}] ${msg}</span>
+        </div>
+        <span className="opacity-50 font-normal text-[10px]">SEND_OK</span>
+      `;
+      logContainer.prepend(logEntry);
+    }
+  }, []);
 
   return { broadcast };
 }
