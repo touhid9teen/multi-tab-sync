@@ -1,35 +1,35 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { getTransactions } from '@/actions/transaction.action';
-import { Transaction } from '@/lib/types';
+import { useSyncChannel } from '@/hooks/useSyncChannel';
+import { useCallback } from 'react';
 
-export default function TransactionList() {
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+export default function TransactionTable() {
+  const queryClient = useQueryClient();
 
-  const fetchTransactions = useCallback(async () => {
-    const result = await getTransactions();
-    
-    if (result.success && result.data) {
-      setTransactions(result.data);
-      setError(null);
-    } else {
-      setError(result.error || 'Failed to fetch transactions');
+  // 1. RECEIVER LOGIC: Listen for sync events
+  const onSyncMessage = useCallback((msg: string) => {
+    if (msg === 'REFETCH') {
+      console.log('[SYNC] Received REFETCH signal, invalidating query cache');
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
     }
-    setLoading(false);
-  }, []);
+  }, [queryClient]);
 
-  useEffect(() => {
-    fetchTransactions();
-    
-    // Polling for demo purposes
-    const interval = setInterval(fetchTransactions, 5000);
-    return () => clearInterval(interval);
-  }, [fetchTransactions]);
+  useSyncChannel(onSyncMessage);
 
-  if (loading && transactions.length === 0) {
+  // 2. Fetch data using TanStack Query
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: ['transactions'],
+    queryFn: async () => {
+      const result = await getTransactions();
+      if (!result.success) throw new Error(result.error);
+      return result.data || [];
+    },
+    staleTime: 1000 * 60, 
+  });
+
+  if (isLoading && !data) {
     return (
       <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-8 text-center">
         <div className="animate-spin inline-block w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full mb-2"></div>
@@ -46,11 +46,11 @@ export default function TransactionList() {
           <p className="text-[10px] text-gray-400 font-mono uppercase tracking-tighter">Neon SQL Instance</p>
         </div>
         <button 
-          onClick={fetchTransactions}
+          onClick={() => refetch()}
           className="p-1.5 hover:bg-gray-100 rounded-md transition-colors"
-          title="Refresh Ledger"
+          title="Manual Sync"
         >
-          <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className={`w-4 h-4 text-gray-400 ${isLoading ? 'animate-spin text-blue-500' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
           </svg>
         </button>
@@ -59,11 +59,13 @@ export default function TransactionList() {
       <div className="divide-y divide-gray-50 max-h-[450px] overflow-y-auto custom-scrollbar">
         {error && (
           <div className="p-4 text-center">
-            <p className="text-sm text-red-500 bg-red-50 py-2 px-3 rounded-lg inline-block">{error}</p>
+            <p className="text-sm text-red-500 bg-red-50 py-2 px-3 rounded-lg inline-block">
+              {error instanceof Error ? error.message : 'Failed to load'}
+            </p>
           </div>
         )}
 
-        {transactions.length === 0 && !error ? (
+        {(!data || data.length === 0) && !error ? (
           <div className="p-12 text-center">
             <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-3">
               <svg className="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -73,7 +75,7 @@ export default function TransactionList() {
             <p className="text-gray-400 text-sm italic">No entries yet.</p>
           </div>
         ) : (
-          transactions.map((t) => (
+          data?.map((t) => (
             <div key={t.id} className="p-4 hover:bg-blue-50/30 transition-colors flex justify-between items-center group">
               <div className="space-y-0.5">
                 <p className="font-semibold text-gray-900 group-hover:text-blue-700 transition-colors">{t.description}</p>

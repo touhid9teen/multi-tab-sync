@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react';
 import { createTransaction } from '@/actions/transaction.action';
 
-export default function TransactionForm() {
+export default function TransactionForm({ onSuccess }: { onSuccess?: () => void }) {
   const [isPending, startTransition] = useTransition();
   const [amount, setAmount] = useState<string>('100');
   const [description, setDescription] = useState('Grocery shopping');
@@ -29,6 +29,9 @@ export default function TransactionForm() {
           fields: result.validationErrors
         });
       } else {
+        // CALL SUCCESS CALLBACK
+        if (onSuccess) onSuccess();
+        
         setSuccess(result.message || 'Success!');
         setAmount('');
         setDescription('');

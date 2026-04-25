@@ -1,78 +1,81 @@
-import * as Tabs from "@radix-ui/react-tabs";
-import TransactionForm from "@/components/TransactionForm";
-import TransactionList from "@/components/TransactionList";
+import Link from 'next/link';
 
-export default function Home() {
+export default function LabPortal() {
+  const labs = [
+    {
+      id: 'broadcast',
+      title: 'Lab 1: BroadcastChannel',
+      description: 'The "Single-Origin Event Bus". Simple, robust synchronization for same-origin tabs.',
+      href: '/broadcast-lab',
+      color: 'blue',
+      icon: (
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4-4m-4 4l4 4" />
+        </svg>
+      )
+    },
+    {
+      id: 'worker',
+      title: 'Lab 2: Shared Workers',
+      description: 'The "Centralized Browser Hub". A background thread shared by all tabs for heavy lifting.',
+      href: '/worker-lab',
+      color: 'indigo',
+      icon: (
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+        </svg>
+      )
+    },
+    {
+      id: 'polling',
+      title: 'Lab 3: TanStack Polling',
+      description: 'The "Stale-While-Revalidate Sync". Reliable fallback synchronization using periodic fetches.',
+      href: '/polling-lab',
+      color: 'purple',
+      icon: (
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg>
+      )
+    }
+  ];
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-start py-12 px-6 bg-gray-50">
-      <div className="w-full max-w-5xl flex flex-col items-center gap-12">
-        <div className="text-center space-y-2">
-          <h1 className="text-5xl font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600">
-            Multi-Tab Sync Demo
+    <main className="min-h-screen flex flex-col items-center justify-center p-8 bg-gradient-to-br from-gray-50 to-gray-100">
+      <div className="max-w-4xl w-full space-y-12">
+        <div className="text-center space-y-4">
+          <h1 className="text-6xl font-black tracking-tighter text-gray-900">
+            Sync<span className="text-blue-600">Labs</span>
           </h1>
-          <p className="text-gray-500 font-medium">Powered by Next.js 15 & Neon PostgreSQL</p>
+          <p className="text-xl text-gray-500 font-medium">Explore the frontiers of cross-tab state management.</p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 w-full">
-          {/* Form Section */}
-          <div className="lg:col-span-1 space-y-6">
-            <h2 className="text-xl font-bold text-gray-800 px-2 flex items-center gap-2">
-              <span className="w-2 h-2 bg-blue-600 rounded-full"></span>
-              Create Entry
-            </h2>
-            <TransactionForm />
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {labs.map((lab) => (
+            <Link 
+              key={lab.id} 
+              href={lab.href}
+              className="group bg-white p-8 rounded-3xl shadow-sm border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+            >
+              <div className={`w-12 h-12 bg-${lab.color}-50 text-${lab.color}-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>
+                {lab.icon}
+              </div>
+              <h2 className="text-xl font-bold text-gray-900 mb-2">{lab.title}</h2>
+              <p className="text-sm text-gray-500 leading-relaxed">{lab.description}</p>
+              <div className="mt-6 flex items-center text-xs font-bold uppercase tracking-widest text-blue-600">
+                Enter Lab
+                <svg className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                </svg>
+              </div>
+            </Link>
+          ))}
+        </div>
 
-          {/* List Section */}
-          <div className="lg:col-span-1 space-y-6">
-            <h2 className="text-xl font-bold text-gray-800 px-2 flex items-center gap-2">
-              <span className="w-2 h-2 bg-green-600 rounded-full"></span>
-              Live Database
-            </h2>
-            <TransactionList />
-          </div>
-
-          {/* Docs/Status Section */}
-          <div className="lg:col-span-1 space-y-6">
-            <h2 className="text-xl font-bold text-gray-800 px-2 flex items-center gap-2">
-              <span className="w-2 h-2 bg-purple-600 rounded-full"></span>
-              System Architecture
-            </h2>
-            <Tabs.Root className="w-full bg-white rounded-xl shadow-lg border border-gray-100 p-2" defaultValue="tab1">
-              <Tabs.List className="flex p-1 bg-gray-100 rounded-lg mb-4">
-                <Tabs.Trigger
-                  value="tab1"
-                  className="flex-1 px-4 py-2 text-sm font-medium text-gray-600 rounded-md data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-sm transition-all"
-                >
-                  Storage
-                </Tabs.Trigger>
-                <Tabs.Trigger
-                  value="tab2"
-                  className="flex-1 px-4 py-2 text-sm font-medium text-gray-600 rounded-md data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-sm transition-all"
-                >
-                  Network
-                </Tabs.Trigger>
-              </Tabs.List>
-
-              <Tabs.Content value="tab1" className="p-4 space-y-3">
-                <p className="text-gray-600 text-sm leading-relaxed">
-                  Data is now persisted in <span className="font-bold text-indigo-600">Neon PostgreSQL</span>. 
-                  Even if you refresh or restart the server, your transactions will remain.
-                </p>
-                <div className="p-3 bg-blue-50 rounded-lg border border-blue-100 text-xs text-blue-700 font-mono">
-                  TABLE: transactions <br/>
-                  ENGINE: Serverless Postgres
-                </div>
-              </Tabs.Content>
-
-              <Tabs.Content value="tab2" className="p-4">
-                <p className="text-gray-600 text-sm leading-relaxed">
-                  Server Actions handle the communication. The 1s latency simulation ensures 
-                  your UI logic correctly handles asynchronous state updates across tabs.
-                </p>
-              </Tabs.Content>
-            </Tabs.Root>
-          </div>
+        <div className="pt-12 border-t border-gray-200 text-center">
+          <p className="text-xs font-mono text-gray-400 uppercase tracking-widest">
+            Experimental Environment • Next.js 15 • Neon DB
+          </p>
         </div>
       </div>
     </main>
