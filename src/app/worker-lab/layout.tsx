@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import SyncStatus from '@/components/SyncStatus';
+import { useRequestCounter } from '@/hooks/use-request-counter';
 
 export default function WorkerLabLayout({
   children,
@@ -9,6 +11,7 @@ export default function WorkerLabLayout({
   children: React.ReactNode;
 }) {
   const [activeTabs, setActiveTabs] = useState(1);
+  const requestCount = useRequestCounter('worker');
 
   useEffect(() => {
     const handleCountUpdate = (e: any) => {
@@ -34,19 +37,24 @@ export default function WorkerLabLayout({
             </Link>
 
             <div className="flex items-center gap-4">
-            <div className="w-10 h-10 bg-indigo-900 rounded-2xl flex items-center justify-center text-white shadow-lg">
-               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-               </svg>
-            </div>
-            <div>
-              <h1 className="text-xl font-black text-gray-900 tracking-tight">Shared Worker Lab</h1>
-              <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Lab #2 • Centralized Hub Sync</p>
+              <div className="w-10 h-10 bg-indigo-900 rounded-2xl flex items-center justify-center text-white shadow-lg">
+                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                 </svg>
+              </div>
+              <div>
+                <h1 className="text-xl font-black text-gray-900 tracking-tight">Shared Worker Lab</h1>
+                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Lab #2 • Centralized Hub Sync</p>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-6">
+             <div className="flex flex-col items-end">
+               <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest leading-none mb-1">Hub Requests</p>
+               <p className="text-sm font-black text-indigo-600 tabular-nums">{requestCount}</p>
+             </div>
+             <div className="h-8 w-px bg-gray-100" />
              <div className="flex items-center gap-2 px-4 py-1.5 bg-indigo-50 text-indigo-700 text-[10px] font-black rounded-xl border border-indigo-100 uppercase tracking-widest transition-all">
                 <span className="relative flex h-2 w-2">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
@@ -67,11 +75,18 @@ export default function WorkerLabLayout({
       </div>
 
       <aside className="w-96 bg-white border-l border-gray-100 flex flex-col shrink-0 overflow-hidden">
-        <div className="p-6 border-b border-gray-50 flex justify-between items-center bg-gray-50/30">
+        <div className="p-8 border-b border-gray-50 space-y-6">
           <h2 className="font-black text-gray-900 uppercase tracking-tighter flex items-center gap-2">
             <svg className="w-5 h-5 text-indigo-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
             </svg>
+            Instrumentation
+          </h2>
+          <SyncStatus method="SharedWorker Hub" status="Healthy" />
+        </div>
+
+        <div className="p-6 border-b border-gray-50 flex justify-between items-center bg-gray-50/30">
+          <h2 className="font-black text-gray-900 uppercase tracking-tighter flex items-center gap-2 text-[10px]">
             Hub Activity
           </h2>
           <span className="text-[10px] bg-indigo-900 text-white px-2 py-1 rounded-md font-black uppercase tracking-widest">Worker</span>
