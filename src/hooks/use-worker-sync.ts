@@ -3,7 +3,7 @@
 import { useEffect, useCallback, useRef } from 'react';
 
 type WorkerMessage = {
-  type: 'REFETCH' | 'PING';
+  type: 'REFETCH' | 'PING' | 'COUNT_UPDATE';
   payload?: any;
 };
 
@@ -11,19 +11,23 @@ export function useWorkerSync(onMessage?: (msg: WorkerMessage) => void) {
   const workerRef = useRef<SharedWorker | null>(null);
 
   useEffect(() => {
-    // 1. Initialize Shared Worker
     const worker = new SharedWorker('/workers/sync-worker.js');
     workerRef.current = worker;
 
-    // 2. Setup Message Listener
     worker.port.onmessage = (event) => {
       const msg = event.data as WorkerMessage;
       
-      // Update UI Log (Shared between tabs)
+      // 1. Handle Internal Count Updates
+      if (msg.type === 'COUNT_UPDATE') {
+        window.dispatchEvent(new CustomEvent('worker-count-update', { detail: msg.payload }));
+        return;
+      }
+
+      // 2. Update UI Log
       const logContainer = document.getElementById('worker-log-container');
       if (logContainer) {
         const logEntry = document.createElement('div');
-        logEntry.className = 'py-2 border-b border-gray-50 flex justify-between items-center text-indigo-600 font-bold';
+        logEntry.className = 'py-2 border-b border-gray-50 flex justify-between items-center text-indigo-600 font-bold animate-in fade-in slide-in-from-left-2';
         logEntry.innerHTML = `
           <div className="flex flex-col">
             <span className="text-[10px] text-gray-400 uppercase tracking-widest font-black">Received via Hub</span>
@@ -39,12 +43,15 @@ export function useWorkerSync(onMessage?: (msg: WorkerMessage) => void) {
       }
     };
 
-    // 3. Start the port
     worker.port.start();
 
+    // Signal disconnect on unmount
+    window.addEventListener('beforeunload', () => {
+      worker.port.postMessage({ type: 'DISCONNECT' });
+    });
+
     return () => {
-      // SharedWorker doesn't have a simple 'close' for all ports, 
-      // but we can signal departure if needed.
+      worker.port.postMessage({ type: 'DISCONNECT' });
       worker.port.close();
     };
   }, [onMessage]);
@@ -53,11 +60,10 @@ export function useWorkerSync(onMessage?: (msg: WorkerMessage) => void) {
     if (workerRef.current) {
       workerRef.current.port.postMessage({ type, payload });
       
-      // Local Log for the sender
       const logContainer = document.getElementById('worker-log-container');
       if (logContainer) {
         const logEntry = document.createElement('div');
-        logEntry.className = 'py-2 border-b border-gray-50 flex justify-between items-center text-blue-600';
+        logEntry.className = 'py-2 border-b border-gray-50 flex justify-between items-center text-blue-600 animate-in fade-in slide-in-from-right-2';
         logEntry.innerHTML = `
           <div className="flex flex-col">
             <span className="text-[10px] text-gray-400 uppercase tracking-widest font-black">Dispatched to Hub</span>

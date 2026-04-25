@@ -1,10 +1,23 @@
 'use client';
 
+import { useState, useEffect } from 'react';
+
 export default function WorkerLabLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const [activeTabs, setActiveTabs] = useState(1);
+
+  useEffect(() => {
+    const handleCountUpdate = (e: any) => {
+      setActiveTabs(e.detail);
+    };
+
+    window.addEventListener('worker-count-update', handleCountUpdate);
+    return () => window.removeEventListener('worker-count-update', handleCountUpdate);
+  }, []);
+
   return (
     <div className="flex h-screen bg-[#F9FAFB] overflow-hidden font-sans">
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
@@ -21,12 +34,18 @@ export default function WorkerLabLayout({
             </div>
           </div>
 
-          <div className="flex items-center gap-2 px-4 py-1.5 bg-indigo-50 text-indigo-700 text-[10px] font-black rounded-xl border border-indigo-100 uppercase tracking-widest">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
-            </span>
-            Worker Active
+          <div className="flex items-center gap-4">
+             <div className="flex items-center gap-2 px-4 py-1.5 bg-indigo-50 text-indigo-700 text-[10px] font-black rounded-xl border border-indigo-100 uppercase tracking-widest transition-all">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
+                </span>
+                Worker Active
+             </div>
+             
+             <div className="px-4 py-1.5 bg-gray-900 text-white text-[10px] font-black rounded-xl uppercase tracking-widest shadow-lg shadow-gray-200">
+               {activeTabs} {activeTabs === 1 ? 'Tab' : 'Tabs'} Connected
+             </div>
           </div>
         </header>
         
