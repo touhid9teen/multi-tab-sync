@@ -1,6 +1,7 @@
 'use client';
 
 import QueryProvider from "@/components/providers/QueryProvider";
+import Link from "next/link";
 
 export default function BroadcastLabLayout({
   children,
@@ -12,7 +13,17 @@ export default function BroadcastLabLayout({
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <header className="h-20 bg-white border-b border-gray-100 flex items-center justify-between px-10 shrink-0">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-6">
+            <Link href="/" className="group flex items-center gap-2 text-gray-400 hover:text-gray-900 transition-all">
+              <div className="w-8 h-8 rounded-full border border-gray-100 flex items-center justify-center group-hover:border-gray-300 transition-all">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+                </svg>
+              </div>
+              <span className="text-xs font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all">Portal</span>
+            </Link>
+
+            <div className="flex items-center gap-4">
             <div className="w-10 h-10 bg-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-indigo-200">
                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -23,8 +34,9 @@ export default function BroadcastLabLayout({
               <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Lab #1 • Event Bus Sync</p>
             </div>
           </div>
+        </div>
 
-          <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3">
              <div className="px-3 py-1 bg-green-50 text-green-700 text-[10px] font-black rounded-full border border-green-100 flex items-center gap-1.5 uppercase tracking-widest">
                <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
                Live Session

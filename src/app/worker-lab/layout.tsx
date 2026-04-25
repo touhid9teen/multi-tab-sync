@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 
 export default function WorkerLabLayout({
   children,
@@ -22,7 +23,17 @@ export default function WorkerLabLayout({
     <div className="flex h-screen bg-[#F9FAFB] overflow-hidden font-sans">
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <header className="h-20 bg-white border-b border-gray-100 flex items-center justify-between px-10 shrink-0">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-6">
+            <Link href="/" className="group flex items-center gap-2 text-gray-400 hover:text-gray-900 transition-all">
+              <div className="w-8 h-8 rounded-full border border-gray-100 flex items-center justify-center group-hover:border-gray-300 transition-all">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+                </svg>
+              </div>
+              <span className="text-xs font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all">Portal</span>
+            </Link>
+
+            <div className="flex items-center gap-4">
             <div className="w-10 h-10 bg-indigo-900 rounded-2xl flex items-center justify-center text-white shadow-lg">
                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
@@ -33,8 +44,9 @@ export default function WorkerLabLayout({
               <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Lab #2 • Centralized Hub Sync</p>
             </div>
           </div>
+        </div>
 
-          <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4">
              <div className="flex items-center gap-2 px-4 py-1.5 bg-indigo-50 text-indigo-700 text-[10px] font-black rounded-xl border border-indigo-100 uppercase tracking-widest transition-all">
                 <span className="relative flex h-2 w-2">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
