@@ -4,7 +4,7 @@ import { useEffect, useCallback } from 'react';
 
 type SyncMessage = 'REFETCH' | 'PING';
 
-export function useSyncChannel(onMessage?: (msg: SyncMessage) => void) {
+export function useBroadcastSync(onMessage?: (msg: SyncMessage) => void) {
   const channelName = 'transaction_sync';
 
   const broadcast = useCallback((message: SyncMessage) => {
@@ -30,6 +30,11 @@ export function useSyncChannel(onMessage?: (msg: SyncMessage) => void) {
       
       const logContainer = document.getElementById('sync-log-container');
       if (logContainer) {
+        // Flash the container
+        logContainer.classList.remove('animate-flash');
+        void logContainer.offsetWidth; // Trigger reflow
+        logContainer.classList.add('animate-flash');
+
         const logEntry = document.createElement('div');
         logEntry.className = 'py-1 border-b border-gray-50 flex justify-between text-indigo-600 font-bold';
         logEntry.innerHTML = `<span>RECV: ${msg}</span> <span class="opacity-50 font-normal">${new Date().toLocaleTimeString()}</span>`;

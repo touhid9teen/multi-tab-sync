@@ -3,10 +3,10 @@
 import * as Tabs from "@radix-ui/react-tabs";
 import TransactionForm from "@/components/TransactionForm";
 import TransactionTable from "@/components/TransactionTable";
-import { useSyncChannel } from "@/hooks/useSyncChannel";
+import { useBroadcastSync } from "@/hooks/use-broadcast-sync";
 
 export default function BroadcastLabPage() {
-  const { broadcast } = useSyncChannel();
+  const { broadcast } = useBroadcastSync();
 
   return (
     <div className="max-w-6xl mx-auto space-y-8">
