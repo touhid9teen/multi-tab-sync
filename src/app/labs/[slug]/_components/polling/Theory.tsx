@@ -27,17 +27,18 @@ export default function Theory() {
          </div>
       </div>
 
-      <section className="bg-gray-900 p-12 rounded-[32px] text-white">
-         <h3 className="text-3xl font-black tracking-tighter mb-8 text-purple-400">The SWR Configuration</h3>
-         <div className="bg-black/40 p-8 rounded-2xl border border-white/5 font-mono text-xs leading-relaxed text-purple-200">
-           <p className="text-white/30 mb-4">// In TransactionTablePolling.tsx</p>
+      <section className="bg-white p-12 rounded-[32px] border border-gray-100 shadow-sm relative overflow-hidden">
+         <div className="absolute top-0 left-0 w-full h-1 bg-purple-600"></div>
+         <h3 className="text-3xl font-black tracking-tighter mb-8 text-gray-900">The SWR Configuration</h3>
+         <div className="bg-gray-900 p-8 rounded-2xl border border-gray-800 font-mono text-xs leading-relaxed text-purple-200">
+           <p className="text-gray-500 mb-4">// In TransactionTablePolling.tsx</p>
            <p><span className="text-purple-400">const</span> result = <span className="text-yellow-400">useQuery</span>({"{"}</p>
            <p className="ml-4">queryKey: [<span className="text-green-400">'transactions'</span>],</p>
            <p className="ml-4 text-purple-300 font-bold">refetchInterval: 5000, // 5 seconds</p>
            <p className="ml-4">staleTime: 0,</p>
            <p>{"}"});</p>
          </div>
-         <p className="mt-6 text-sm text-white/50 italic">Note: In production, high-frequency polling can significantly increase server costs and database load.</p>
+         <p className="mt-6 text-sm text-gray-500 italic">Note: In production, high-frequency polling can significantly increase server costs and database load.</p>
       </section>
     </div>
   );

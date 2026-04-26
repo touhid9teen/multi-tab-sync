@@ -27,15 +27,16 @@ export default function Theory() {
          </div>
       </div>
 
-      <section className="bg-indigo-950 p-12 rounded-[32px] text-white">
-         <h3 className="text-3xl font-black tracking-tighter mb-8 text-indigo-200">The Dispatcher Logic</h3>
-         <div className="bg-black/40 p-8 rounded-2xl border border-white/5 font-mono text-xs leading-relaxed text-indigo-100">
-           <p className="text-white/30 mb-4">// In public/workers/sync-worker.js</p>
+      <section className="bg-white p-12 rounded-[32px] border border-gray-100 shadow-sm relative overflow-hidden">
+         <div className="absolute top-0 left-0 w-full h-1 bg-indigo-900"></div>
+         <h3 className="text-3xl font-black tracking-tighter mb-8 text-gray-900">The Dispatcher Logic</h3>
+         <div className="bg-gray-900 p-8 rounded-2xl border border-gray-800 font-mono text-xs leading-relaxed text-indigo-100">
+           <p className="text-gray-500 mb-4">// In public/workers/sync-worker.js</p>
            <p><span className="text-indigo-400">self</span>.<span className="text-yellow-400">onconnect</span> = (e) ={'>'} {"{"}</p>
            <p className="ml-4"><span className="text-indigo-400">const</span> port = e.ports[<span className="text-orange-400">0</span>];</p>
            <p className="ml-4">ports.<span className="text-blue-400">add</span>(port);</p>
            <p className="ml-4 mt-2">port.<span className="text-blue-400">onmessage</span> = (msg) ={'>'} {"{"}</p>
-           <p className="ml-8 text-white/50">// Echo message to every other connected tab</p>
+           <p className="ml-8 text-white/20">// Echo message to every other connected tab</p>
            <p className="ml-8">ports.<span className="text-blue-400">forEach</span>(p ={'>'} p.<span className="text-blue-400">postMessage</span>(msg.data));</p>
            <p className="ml-4">{"}"};</p>
            <p>{"}"};</p>

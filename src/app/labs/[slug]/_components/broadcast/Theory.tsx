@@ -49,40 +49,41 @@ export default function Theory() {
          </div>
       </div>
 
-      <section className="space-y-8 bg-gray-900 p-12 rounded-[32px] text-white">
-         <h3 className="text-3xl font-black tracking-tighter">The Implementation Flow</h3>
+      <section className="space-y-8 bg-white p-12 rounded-[32px] border border-gray-100 shadow-sm relative overflow-hidden">
+         <div className="absolute top-0 left-0 w-full h-1 bg-indigo-600"></div>
+         <h3 className="text-3xl font-black tracking-tighter text-gray-900">The Implementation Flow</h3>
          
          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
             <div className="space-y-6">
               <div className="flex items-center gap-4">
-                <div className="w-8 h-8 bg-indigo-500 rounded-full flex items-center justify-center font-black text-sm italic">01</div>
-                <h5 className="text-xl font-bold tracking-tight">The Transmitter (Tab A)</h5>
+                <div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center font-black text-sm italic text-indigo-600">01</div>
+                <h5 className="text-xl font-bold tracking-tight text-gray-900">The Transmitter (Tab A)</h5>
               </div>
-              <div className="bg-white/5 p-6 rounded-2xl border border-white/10 font-mono text-xs leading-relaxed text-indigo-200">
-                <p className="text-white/40 mb-2">// In TransactionForm.tsx</p>
+              <div className="bg-gray-900 p-6 rounded-2xl border border-gray-800 font-mono text-xs leading-relaxed text-indigo-200">
+                <p className="text-gray-500 mb-2">// In TransactionForm.tsx</p>
                 <p><span className="text-pink-400">const</span> channel = <span className="text-yellow-400">new</span> BroadcastChannel(<span className="text-green-400">'sync'</span>);</p>
                 <p>channel.<span className="text-blue-400">postMessage</span>(<span className="text-green-400">'REFETCH'</span>);</p>
               </div>
-              <p className="text-sm text-white/60">When a user submits the form, Tab A saves the data to Neon DB. Once successful, it screams "REFETCH" into the browser's shared channel.</p>
+              <p className="text-sm text-gray-500 leading-relaxed">When a user submits the form, Tab A saves the data to Neon DB. Once successful, it screams "REFETCH" into the browser's shared channel.</p>
             </div>
 
             <div className="space-y-6">
               <div className="flex items-center gap-4">
-                <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center font-black text-sm italic text-black">02</div>
-                <h5 className="text-xl font-bold tracking-tight">The Receiver (Tab B)</h5>
+                <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center font-black text-sm italic text-green-600">02</div>
+                <h5 className="text-xl font-bold tracking-tight text-gray-900">The Receiver (Tab B)</h5>
               </div>
-              <div className="bg-white/5 p-6 rounded-2xl border border-white/10 font-mono text-xs leading-relaxed text-green-200">
-                <p className="text-white/40 mb-2">// In TransactionTable.tsx</p>
+              <div className="bg-gray-900 p-6 rounded-2xl border border-gray-800 font-mono text-xs leading-relaxed text-green-200">
+                <p className="text-gray-500 mb-2">// In TransactionTable.tsx</p>
                 <p>channel.<span className="text-blue-400">onmessage</span> = (e) ={'>'} {"{"}</p>
                 <p className="ml-4">queryClient.<span className="text-blue-400">invalidateQueries</span>([<span className="text-green-400">'txs'</span>]);</p>
                 <p>{"}"};</p>
               </div>
-              <p className="text-sm text-white/60">Tab B is constantly listening. When it hears the "REFETCH" command, it tells TanStack Query that its cached data is now "stale" and triggers a new fetch.</p>
+              <p className="text-sm text-gray-500 leading-relaxed">Tab B is constantly listening. When it hears the "REFETCH" command, it tells TanStack Query that its cached data is now "stale" and triggers a new fetch.</p>
             </div>
          </div>
 
-         <div className="pt-8 border-t border-white/10 text-center">
-            <p className="text-xs font-black uppercase tracking-widest text-indigo-400">Sync Completed in ~2ms • State Unified Across All Tabs</p>
+         <div className="pt-8 border-t border-gray-100 text-center">
+            <p className="text-[10px] font-black uppercase tracking-widest text-indigo-400">Sync Completed in ~2ms • State Unified Across All Tabs</p>
          </div>
       </section>
 
