@@ -1,0 +1,32 @@
+export const LAB_MODULES = [
+  {
+    href: "/broadcast-lab",
+    title: "BroadcastChannel",
+    description: "Single-origin event bus. Best for instant, decentralized synchronization between same-origin tabs.",
+    color: "bg-blue-50",
+    textColor: "text-blue-600",
+    shadow: "hover:shadow-blue-100",
+    hoverBorder: "hover:border-blue-300",
+    iconPath: "M13 10V3L4 14h7v7l9-11h-7z",
+  },
+  {
+    href: "/worker-lab",
+    title: "Shared Workers",
+    description: "Centralized background threads. Ideal for complex state management and resource pooling across tabs.",
+    color: "bg-indigo-50",
+    textColor: "text-indigo-900",
+    shadow: "hover:shadow-indigo-100",
+    hoverBorder: "hover:border-indigo-300",
+    iconPath: "M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4",
+  },
+  {
+    href: "/polling-lab",
+    title: "TanStack Polling",
+    description: "Stale-while-revalidate fallback. Guarantees synchronization when modern browser APIs are unavailable.",
+    color: "bg-purple-50",
+    textColor: "text-purple-600",
+    shadow: "hover:shadow-purple-100",
+    hoverBorder: "hover:border-purple-300",
+    iconPath: "M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15",
+  },
+];
