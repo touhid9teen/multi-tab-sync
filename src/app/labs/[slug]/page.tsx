@@ -5,6 +5,7 @@ import { useParams, notFound } from 'next/navigation';
 import * as Tabs from "@radix-ui/react-tabs";
 import { useBroadcastSync } from "@/hooks/use-broadcast-sync";
 import { useWorkerSync } from "@/hooks/use-worker-sync";
+import BackToHome from "@/components/BackToHome";
 
 // Broadcast Components
 import BroadcastDashboard from "./_components/broadcast/Dashboard";
@@ -29,15 +30,7 @@ export default function LabPage() {
     return (
       <div className="min-h-screen bg-[#F9FAFB] p-8 lg:p-24 font-sans">
         <div className="max-w-6xl mx-auto space-y-8">
-          <Link 
-            href="/" 
-            className="inline-flex items-center gap-2 text-sm font-black text-gray-400 hover:text-gray-900 transition-colors group mb-2"
-          >
-            <svg className="w-4 h-4 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
-            </svg>
-            Back to Laboratory Hub
-          </Link>
+          <BackToHome />
           <Tabs.Root defaultValue="dashboard" className="w-full">
             <Tabs.List className="flex p-1 bg-gray-200/50 rounded-2xl mb-8 w-fit backdrop-blur-md">
               <Tabs.Trigger value="dashboard" className="px-8 py-3 text-sm font-black rounded-xl text-gray-500 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-xl transition-all duration-300">Dashboard</Tabs.Trigger>
@@ -59,15 +52,7 @@ export default function LabPage() {
     return (
       <div className="min-h-screen bg-[#F9FAFB] p-8 lg:p-24 font-sans">
         <div className="max-w-6xl mx-auto space-y-8">
-          <Link 
-            href="/" 
-            className="inline-flex items-center gap-2 text-sm font-black text-gray-400 hover:text-gray-900 transition-colors group mb-2"
-          >
-            <svg className="w-4 h-4 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
-            </svg>
-            Back to Laboratory Hub
-          </Link>
+          <BackToHome />
           <Tabs.Root defaultValue="dashboard" className="w-full">
             <Tabs.List className="flex p-1 bg-gray-200/50 rounded-2xl mb-8 w-fit backdrop-blur-md">
               <Tabs.Trigger value="dashboard" className="px-8 py-3 text-sm font-black rounded-xl text-gray-500 data-[state=active]:bg-white data-[state=active]:text-purple-600 data-[state=active]:shadow-xl transition-all duration-300">Polling Dashboard</Tabs.Trigger>
@@ -89,15 +74,7 @@ export default function LabPage() {
     return (
       <div className="min-h-screen bg-[#F9FAFB] p-8 lg:p-24 font-sans">
         <div className="max-w-6xl mx-auto space-y-8">
-          <Link 
-            href="/" 
-            className="inline-flex items-center gap-2 text-sm font-black text-gray-400 hover:text-gray-900 transition-colors group mb-2"
-          >
-            <svg className="w-4 h-4 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
-            </svg>
-            Back to Laboratory Hub
-          </Link>
+          <BackToHome />
           <Tabs.Root defaultValue="dashboard" className="w-full">
             <Tabs.List className="flex p-1 bg-gray-200/50 rounded-2xl mb-8 w-fit backdrop-blur-md">
               <Tabs.Trigger value="dashboard" className="px-8 py-3 text-sm font-black rounded-xl text-gray-500 data-[state=active]:bg-white data-[state=active]:text-indigo-900 data-[state=active]:shadow-xl transition-all duration-300">Hub Dashboard</Tabs.Trigger>
