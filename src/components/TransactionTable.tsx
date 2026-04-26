@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { getTransactions } from '@/actions/transaction.action';
+import { getTransactions, deleteTransaction } from '@/actions/transaction.action';
 import { useBroadcastSync } from '@/hooks/use-broadcast-sync';
 import { useCallback, useEffect, useState } from 'react';
 import { incrementRequestCount } from '@/hooks/use-request-counter';
@@ -9,6 +9,23 @@ import { incrementRequestCount } from '@/hooks/use-request-counter';
 export default function TransactionTable() {
   const queryClient = useQueryClient();
   const [isLeader, setIsLeader] = useState(false);
+  const { broadcast } = useBroadcastSync();
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this entry?')) return;
+    
+    try {
+      const result = await deleteTransaction(id);
+      if (result.success) {
+        queryClient.invalidateQueries({ queryKey: ['transactions'] });
+        broadcast('REFETCH');
+      } else {
+        alert(result.error);
+      }
+    } catch (err) {
+      alert('Failed to delete transaction');
+    }
+  };
 
   // 1. LEADER ELECTION LOGIC
   useEffect(() => {
@@ -124,8 +141,14 @@ export default function TransactionTable() {
             <p className="text-gray-400 font-medium italic">No ledger entries found.</p>
           </div>
         ) : (
-          data?.map((t) => (
-            <div key={t.id} className={`p-6 transition-all flex justify-between items-center group ${t.status === 'pending' ? 'opacity-50 grayscale bg-gray-50/50' : 'hover:bg-gray-50/80'}`}>
+          data?.map((t, index) => (
+            <div 
+              key={t.id} 
+              className={`p-6 transition-all flex justify-between items-center group relative ${
+                t.status === 'pending' ? 'opacity-50 grayscale bg-gray-50/50' : 
+                index % 2 === 0 ? 'bg-white hover:bg-gray-50/50' : 'bg-gray-50/30 hover:bg-gray-50/80'
+              }`}
+            >
               <div className="space-y-1">
                 <p className="font-bold text-gray-900 group-hover:text-blue-600 transition-colors tracking-tight flex items-center gap-2">
                   {t.description}
@@ -137,22 +160,34 @@ export default function TransactionTable() {
                   )}
                 </p>
                 <div className="flex items-center gap-3">
-                  <span className="text-[10px] text-gray-400 bg-gray-100 px-2 py-1 rounded-md font-black tracking-tighter">ID: {t.id}</span>
+                  <span className="text-[10px] text-gray-400 bg-white border border-gray-100 px-2 py-1 rounded-md font-black tracking-tighter">ID: {t.id}</span>
                   <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
                     {new Date(t.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </span>
                 </div>
               </div>
-              <div className="text-right space-y-1.5">
-                <p className="text-xl font-black text-gray-900 tabular-nums tracking-tighter">
-                  <span className="text-xs font-bold text-gray-300 mr-1">$</span>
-                  {Number(t.amount).toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                </p>
-                <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border border-blue-100/50 ${
-                  t.status === 'pending' ? 'bg-blue-100 text-blue-700 animate-pulse' : 'bg-blue-50 text-blue-600'
-                }`}>
-                  {t.status}
-                </span>
+              <div className="flex items-center gap-6">
+                <div className="text-right space-y-1.5">
+                  <p className="text-xl font-black text-gray-900 tabular-nums tracking-tighter">
+                    <span className="text-xs font-bold text-gray-300 mr-1">$</span>
+                    {Number(t.amount).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                  </p>
+                  <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border border-blue-100/50 ${
+                    t.status === 'pending' ? 'bg-blue-100 text-blue-700 animate-pulse' : 'bg-blue-50 text-blue-600'
+                  }`}>
+                    {t.status}
+                  </span>
+                </div>
+                
+                <button 
+                  onClick={() => handleDelete(t.id)}
+                  className="opacity-0 group-hover:opacity-100 p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
+                  title="Delete record"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
               </div>
             </div>
           ))

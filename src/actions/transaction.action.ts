@@ -105,3 +105,19 @@ export async function getTransactions(): Promise<ActionResult<Transaction[]>> {
     };
   }
 }
+export async function deleteTransaction(id: string): Promise<ActionResult<void>> {
+  try {
+    await sql`DELETE FROM transactions WHERE id = ${id}`;
+    revalidatePath('/');
+    return {
+      success: true,
+      message: 'Transaction deleted successfully',
+    };
+  } catch (error) {
+    console.error('[DELETE_EXCEPTION]:', error);
+    return {
+      success: false,
+      error: 'Failed to delete transaction',
+    };
+  }
+}
