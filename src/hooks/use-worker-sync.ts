@@ -2,7 +2,7 @@
 
 import { useEffect, useCallback, useRef } from 'react';
 
-type WorkerMessage = {
+export type WorkerMessage = {
   type: 'REFETCH' | 'PING' | 'COUNT_UPDATE' | 'DISCONNECT';
   payload?: any;
 };
