@@ -104,15 +104,13 @@ export default function Theory() {
       <section className="space-y-8 bg-white p-12 rounded-[32px] border border-gray-100 shadow-sm relative overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-1 bg-indigo-600"></div>
         <h3 className="text-3xl font-black tracking-tighter text-gray-900">
-          1. Professional Hook Implementation (SSR-Safe)
+          1. Pure Native Implementation (No Frameworks)
         </h3>
 
         <div className="grid grid-cols-1 gap-8">
           <div className="space-y-6">
             <p className="text-sm text-gray-500 leading-relaxed max-w-3xl">
-              In modern Next.js/React apps, manual lifecycle management is error-prone. We use a custom 
-              <code className="text-indigo-600 font-bold bg-indigo-50 px-2 py-0.5 rounded ml-1 mr-1">useBroadcastChannel</code> 
-              hook that automatically handles opening, message listening, and closing to prevent memory leaks.
+              This lab demonstrates a <strong>100% native synchronization flow</strong>. We bypass high-level libraries like TanStack Query to show how the browser's own APIs handle the entire lifecycle: from dispatching signals to manual UI updates.
             </p>
             <div className="bg-gray-900 p-8 rounded-3xl border border-gray-800 font-mono text-xs leading-relaxed shadow-xl">
               <p className="text-indigo-400 mb-4">// hooks/use-broadcast-channel.ts</p>
@@ -121,7 +119,7 @@ export default function Theory() {
               <p className="ml-4"><span className="text-blue-400">useEffect</span>(() {"=>"} {"{"}</p>
               <p className="ml-8"><span className="text-pink-400">const</span> channel = <span className="text-yellow-400">new</span> BroadcastChannel(name);</p>
               <p className="ml-8">channel.onmessage = (e) {"=>"} onMessage(e.data);</p>
-              <p className="ml-8"><span className="text-pink-400">return</span> () {"=>"} channel.<span className="text-blue-400">close</span>(); <span className="text-gray-500">// Critical Cleanup</span></p>
+              <p className="ml-8"><span className="text-pink-400">return</span> () {"=>"} channel.<span className="text-blue-400">close</span>(); <span className="text-gray-500">// Cleanup</span></p>
               <p className="ml-4">{"}"}, [name]);</p>
               <br />
               <p className="ml-4"><span className="text-pink-400">return</span> {"{"} postMessage: (msg) {"=>"} channel.<span className="text-blue-400">postMessage</span>(msg) {"}"};</p>
@@ -136,12 +134,15 @@ export default function Theory() {
                   01
                 </div>
                 <h5 className="text-xl font-bold tracking-tight text-gray-900">
-                  Usage: Dispatching
+                  Transmitter: Manual Dispatch
                 </h5>
               </div>
               <div className="bg-gray-900 p-6 rounded-2xl border border-gray-800 font-mono text-xs leading-relaxed text-indigo-200">
-                <p><span className="text-pink-400">const</span> {"{"} postMessage {"}"} = useBroadcastChannel(<span className="text-green-400">'sync'</span>);</p>
-                <p>postMessage(<span className="text-green-400">'REFETCH'</span>);</p>
+                <p className="text-gray-500 mb-2">// In TransactionForm.tsx</p>
+                <p><span className="text-pink-400">const</span> result = <span className="text-pink-400">await</span> createTransaction(data);</p>
+                <p><span className="text-pink-400">if</span> (result.success) {"{"}</p>
+                <p className="ml-4">broadcast(<span className="text-green-400">'REFETCH'</span>);</p>
+                <p>{"}"}</p>
               </div>
             </div>
 
@@ -151,12 +152,15 @@ export default function Theory() {
                   02
                 </div>
                 <h5 className="text-xl font-bold tracking-tight text-gray-900">
-                  Usage: Listening
+                  Receiver: Manual State Refresh
                 </h5>
               </div>
               <div className="bg-gray-900 p-6 rounded-2xl border border-gray-800 font-mono text-xs leading-relaxed text-green-200">
-                <p>useBroadcastChannel(<span className="text-green-400">'sync'</span>, (msg) {"=>"} {"{"}</p>
-                <p className="ml-4">queryClient.<span className="text-blue-400">invalidateQueries</span>();</p>
+                <p className="text-gray-500 mb-2">// In TransactionTable.tsx</p>
+                <p>useBroadcastSync((msg) {"=>"} {"{"}</p>
+                <p className="ml-4"><span className="text-pink-400">if</span> (msg === <span className="text-green-400">'REFETCH'</span>) {"{"}</p>
+                <p className="ml-8">fetchData(); <span className="text-gray-500">// Manual state update</span></p>
+                <p className="ml-4">{"}"}</p>
                 <p>{"}"});</p>
               </div>
             </div>

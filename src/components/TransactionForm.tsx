@@ -1,16 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
 import { createTransaction } from '@/actions/transaction.action';
 import { Transaction } from '@/lib/types';
 import { useBroadcastSync } from '@/hooks/use-broadcast-sync';
 
-export default function TransactionForm({ onSuccess, isNative = false }: { onSuccess?: () => void; isNative?: boolean }) {
+export default function TransactionForm({ onSuccess }: { onSuccess?: () => void }) {
   const [amount, setAmount] = useState<string>('100');
   const [description, setDescription] = useState('Grocery shopping');
   const [isPending, setIsPending] = useState(false);
-  const queryClient = useQueryClient();
   const { broadcast } = useBroadcastSync();
   
   const [errors, setErrors] = useState<{ general?: string; fields?: Record<string, string[]> }>({});
@@ -24,55 +22,27 @@ export default function TransactionForm({ onSuccess, isNative = false }: { onSuc
 
     const data = { amount: parseFloat(amount), description };
 
-    // 1. OPTIMISTIC UPDATE (TanStack only)
-    let previousTxs: Transaction[] | undefined;
-    if (!isNative) {
-      await queryClient.cancelQueries({ queryKey: ['transactions'] });
-      previousTxs = queryClient.getQueryData<Transaction[]>(['transactions']);
-      
-      if (previousTxs) {
-        queryClient.setQueryData<Transaction[]>(['transactions'], [
-          {
-            id: 'optimistic-' + Date.now(),
-            amount: data.amount,
-            description: data.description,
-            status: 'pending',
-            created_at: new Date().toISOString(),
-          },
-          ...previousTxs,
-        ]);
-      }
-    }
-
     try {
-      // 2. NATIVE SERVER ACTION
+      // 1. NATIVE SERVER ACTION
       const result = await createTransaction(data);
       
       if (!result.success) {
         throw result;
       }
 
-      // 3. NATIVE BROADCAST SIGNAL
+      // 2. NATIVE BROADCAST SIGNAL
       broadcast('REFETCH');
 
-      // 4. UI FEEDBACK & CLEANUP
-      if (onSuccess) onSuccess();
+      // 3. UI FEEDBACK & CLEANUP
       setSuccess('Transaction saved successfully!');
       setAmount('');
       setDescription('');
       
-      // 5. LOCAL REFETCH (Native or TanStack)
-      if (!isNative) {
-        queryClient.invalidateQueries({ queryKey: ['transactions'] });
-      }
+      // 4. EXTERNAL SYNC (handled by dashboard)
+      if (onSuccess) onSuccess();
       
       setTimeout(() => setSuccess(null), 3000);
     } catch (err: any) {
-      // ROLLBACK on error (TanStack only)
-      if (!isNative && previousTxs) {
-        queryClient.setQueryData(['transactions'], previousTxs);
-      }
-      
       if (err.validationErrors) {
         setErrors({ general: 'Validation failed', fields: err.validationErrors });
       } else {

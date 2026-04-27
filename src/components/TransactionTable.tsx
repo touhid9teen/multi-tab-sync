@@ -7,7 +7,7 @@ import { incrementRequestCount } from '@/hooks/use-request-counter';
 import { useBroadcastChannel } from '@/hooks/use-broadcast-channel';
 import { Transaction } from '@/lib/types';
 
-export default function TransactionTable() {
+export default function TransactionTable({ refetchTrigger }: { refetchTrigger?: number }) {
   const [data, setData] = useState<Transaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefetching, setIsRefetching] = useState(false);
@@ -37,6 +37,13 @@ export default function TransactionTable() {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  // Handle manual refetch trigger from parent
+  useEffect(() => {
+    if (refetchTrigger !== undefined && refetchTrigger > 0) {
+      fetchData(true);
+    }
+  }, [refetchTrigger, fetchData]);
 
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this entry?')) return;
@@ -79,8 +86,6 @@ export default function TransactionTable() {
     postElectionMessage({ type: 'WHO_IS_LEADER' });
     
     const timeout = setTimeout(() => {
-      // If no one claimed leadership, I will.
-      // In a real app, this would be more robust.
       setIsLeader(true);
       postElectionMessage({ type: 'IAM_LEADER', id: myId });
     }, 500);
@@ -91,11 +96,10 @@ export default function TransactionTable() {
   // 2. RECEIVER LOGIC (Manual Refetch on Signal)
   const onSyncMessage = useCallback((msg: string) => {
     if (msg === 'REFETCH') {
-      if (isLeader) {
-        fetchData(true);
-      }
+      // All listeners should fetch to keep tabs in sync
+      fetchData(true);
     }
-  }, [isLeader, fetchData]);
+  }, [fetchData]);
 
   useBroadcastSync(onSyncMessage);
 
