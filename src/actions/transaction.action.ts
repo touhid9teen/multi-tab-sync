@@ -70,9 +70,8 @@ export async function createTransaction(rawData: unknown): Promise<ActionResult<
     
     let errorMessage = 'An unexpected error occurred.';
     if (process.env.NODE_ENV === 'development') {
-      const err = error as any;
+      const err = error as Error;
       errorMessage = `Database Error: ${err.message}`;
-      if (err.cause) errorMessage += ` (${err.cause.message || err.cause.code})`;
     }
 
     return {

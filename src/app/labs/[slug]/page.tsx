@@ -1,7 +1,6 @@
 'use client';
 
 import BackToHome from "@/components/BackToHome";
-import { useBroadcastSync } from "@/hooks/use-broadcast-sync";
 import { useWorkerSync } from "@/hooks/use-worker-sync";
 import * as Tabs from "@radix-ui/react-tabs";
 import { notFound, useParams } from 'next/navigation';

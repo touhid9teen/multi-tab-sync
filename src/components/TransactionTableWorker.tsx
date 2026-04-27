@@ -2,14 +2,14 @@
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { getTransactions } from '@/actions/transaction.action';
-import { useWorkerSync } from '@/hooks/use-worker-sync';
+import { useWorkerSync, WorkerMessage } from '@/hooks/use-worker-sync';
 import { useCallback } from 'react';
 import { incrementRequestCount } from '@/hooks/use-request-counter';
 
 export default function TransactionTableWorker() {
   const queryClient = useQueryClient();
 
-  const onWorkerMessage = useCallback((msg: any) => {
+  const onWorkerMessage = useCallback((msg: WorkerMessage) => {
     if (msg.type === 'REFETCH') {
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
     }

@@ -13,7 +13,7 @@ export default function Theory() {
         </div>
         <h2 className="text-5xl font-black text-gray-900 tracking-tighter leading-none">
           BroadcastChannel API: <br />
-          The "Invisible Event Bus"
+          The &quot;Invisible Event Bus&quot;
         </h2>
         <p className="text-xl text-gray-500 max-w-2xl font-medium leading-relaxed">
           The BroadcastChannel API allows simple, peer-to-peer communication
@@ -95,7 +95,7 @@ export default function Theory() {
           </h4>
           <p className="text-sm text-gray-500 leading-relaxed">
             Strictly restricted to the exact same domain, protocol, and port.
-            Malicious sites can't listen in on your channel.
+            Malicious sites can&apos;t listen in on your channel.
           </p>
         </div>
       </div>
@@ -110,16 +110,16 @@ export default function Theory() {
         <div className="grid grid-cols-1 gap-8">
           <div className="space-y-6">
             <p className="text-sm text-gray-500 leading-relaxed max-w-3xl">
-              This lab demonstrates a <strong>100% native synchronization flow</strong>. We bypass high-level libraries like TanStack Query to show how the browser's own APIs handle the entire lifecycle: from dispatching signals to manual UI updates.
+              This lab demonstrates a <strong>100% native synchronization flow</strong>. We bypass high-level libraries like TanStack Query to show how the browser&apos;s own APIs handle the entire lifecycle: from dispatching signals to manual UI updates.
             </p>
             <div className="bg-gray-900 p-8 rounded-3xl border border-gray-800 font-mono text-xs leading-relaxed shadow-xl">
-              <p className="text-indigo-400 mb-4">// hooks/use-broadcast-channel.ts</p>
+              <p className="text-indigo-400 mb-4">{`// hooks/use-broadcast-channel.ts`}</p>
               <p><span className="text-pink-400">export function</span> <span className="text-blue-400">useBroadcastChannel</span>(name, onMessage) {"{"}</p>
-              <p className="ml-4 text-gray-500">// SSR Safety: Only runs on the client</p>
+              <p className="ml-4 text-gray-500">{`// SSR Safety: Only runs on the client`}</p>
               <p className="ml-4"><span className="text-blue-400">useEffect</span>(() {"=>"} {"{"}</p>
               <p className="ml-8"><span className="text-pink-400">const</span> channel = <span className="text-yellow-400">new</span> BroadcastChannel(name);</p>
               <p className="ml-8">channel.onmessage = (e) {"=>"} onMessage(e.data);</p>
-              <p className="ml-8"><span className="text-pink-400">return</span> () {"=>"} channel.<span className="text-blue-400">close</span>(); <span className="text-gray-500">// Cleanup</span></p>
+              <p className="ml-8"><span className="text-pink-400">return</span> () {"=>"} channel.<span className="text-blue-400">close</span>(); <span className="text-gray-500">{`// Cleanup`}</span></p>
               <p className="ml-4">{"}"}, [name]);</p>
               <br />
               <p className="ml-4"><span className="text-pink-400">return</span> {"{"} postMessage: (msg) {"=>"} channel.<span className="text-blue-400">postMessage</span>(msg) {"}"};</p>
@@ -138,10 +138,10 @@ export default function Theory() {
                 </h5>
               </div>
               <div className="bg-gray-900 p-6 rounded-2xl border border-gray-800 font-mono text-xs leading-relaxed text-indigo-200">
-                <p className="text-gray-500 mb-2">// In TransactionForm.tsx</p>
+                <p className="text-gray-500 mb-2">{`// In TransactionForm.tsx`}</p>
                 <p><span className="text-pink-400">const</span> result = <span className="text-pink-400">await</span> createTransaction(data);</p>
                 <p><span className="text-pink-400">if</span> (result.success) {"{"}</p>
-                <p className="ml-4">broadcast(<span className="text-green-400">'REFETCH'</span>);</p>
+                <p className="ml-4">broadcast(<span className="text-green-400">&apos;REFETCH&apos;</span>);</p>
                 <p>{"}"}</p>
               </div>
             </div>
@@ -156,10 +156,10 @@ export default function Theory() {
                 </h5>
               </div>
               <div className="bg-gray-900 p-6 rounded-2xl border border-gray-800 font-mono text-xs leading-relaxed text-green-200">
-                <p className="text-gray-500 mb-2">// In TransactionTable.tsx</p>
+                <p className="text-gray-500 mb-2">{`// In TransactionTable.tsx`}</p>
                 <p>useBroadcastSync((msg) {"=>"} {"{"}</p>
-                <p className="ml-4"><span className="text-pink-400">if</span> (msg === <span className="text-green-400">'REFETCH'</span>) {"{"}</p>
-                <p className="ml-8">fetchData(); <span className="text-gray-500">// Manual state update</span></p>
+                <p className="ml-4"><span className="text-pink-400">if</span> (msg === <span className="text-green-400">&apos;REFETCH&apos;</span>) {"{"}</p>
+                <p className="ml-8">fetchData(); <span className="text-gray-500">{`// Manual state update`}</span></p>
                 <p className="ml-4">{"}"}</p>
                 <p>{"}"});</p>
               </div>
@@ -178,7 +178,7 @@ export default function Theory() {
               The Structured Clone Algorithm
             </h3>
             <p className="text-indigo-100 text-lg font-medium leading-relaxed">
-              The browser doesn't just "share" a reference to your object. It
+              The browser doesn&apos;t just &quot;share&quot; a reference to your object. It
               physically copies the data using the Structured Clone Algorithm to
               prevent cross-tab memory leaks.
             </p>
@@ -243,9 +243,9 @@ export default function Theory() {
               <code className="bg-gray-100 px-1 rounded text-pink-500">
                 postMessage
               </code>{" "}
-              is called, it's pushed to the <strong>Call Stack</strong>. The JS
+              is called, it&apos;s pushed to the <strong>Call Stack</strong>. The JS
               Engine hands the payload to the <strong>Web API</strong>. Since
-              it's fire-and-forget, the function is popped off the stack
+              it&apos;s fire-and-forget, the function is popped off the stack
               immediately, never blocking the main thread.
             </p>
           </div>
@@ -257,8 +257,8 @@ export default function Theory() {
               The Receiving Tab
             </h5>
             <p className="text-sm text-gray-500 leading-relaxed">
-              The message arrives in Tab B's <strong>Task Queue</strong>{" "}
-              (Macrotask). The <strong>Event Loop</strong> waits until Tab B's
+              The message arrives in Tab B&apos;s <strong>Task Queue</strong>{" "}
+              (Macrotask). The <strong>Event Loop</strong> waits until Tab B&apos;s
               Call Stack is completely empty, then moves the{" "}
               <code className="bg-gray-100 px-1 rounded text-blue-500">
                 onmessage
@@ -288,7 +288,7 @@ export default function Theory() {
                 1
               </div>
               <p className="text-sm text-gray-600">
-                User clicks "Logout" in Tab 1.
+                User clicks &quot;Logout&quot; in Tab 1.
               </p>
             </li>
             <li className="flex gap-4">
@@ -305,17 +305,17 @@ export default function Theory() {
               </div>
               <p className="text-sm text-gray-600">
                 All other background tabs receive the action and execute
-                `window.location.href = '/login'`.
+                `window.location.href = &apos;/login&apos;`.
               </p>
             </li>
           </ul>
         </div>
         <div className="bg-gray-900 p-8 rounded-[32px] border border-gray-800 font-mono text-xs leading-relaxed shadow-2xl text-gray-300">
-          <p className="text-indigo-400 mb-4">// auth-sync.ts</p>
+          <p className="text-indigo-400 mb-4">{`// auth-sync.ts`}</p>
           <p>
             <span className="text-pink-400">const</span> authChannel ={" "}
             <span className="text-yellow-400">new</span> BroadcastChannel(
-            <span className="text-green-400">'auth'</span>);
+            <span className="text-green-400">&apos;auth&apos;</span>);
           </p>
           <br />
           <p>
@@ -324,15 +324,15 @@ export default function Theory() {
           </p>
           <p className="ml-4">
             localStorage.<span className="text-blue-400">removeItem</span>(
-            <span className="text-green-400">'token'</span>);
+            <span className="text-green-400">&apos;token&apos;</span>);
           </p>
           <p className="ml-4">
             authChannel.<span className="text-blue-400">postMessage</span>({"{"}{" "}
-            action: <span className="text-green-400">'LOGOUT'</span> {"}"});
+            action: <span className="text-green-400">&apos;LOGOUT&apos;</span> {"}"});
           </p>
           <p className="ml-4">
             window.location.href ={" "}
-            <span className="text-green-400">'/login'</span>;
+            <span className="text-green-400">&apos;/login&apos;</span>;
           </p>
           <p>{"}"}</p>
           <br />
@@ -342,14 +342,14 @@ export default function Theory() {
           </p>
           <p className="ml-4">
             <span className="text-pink-400">if</span> (e.data.action ==={" "}
-            <span className="text-green-400">'LOGOUT'</span>) {"{"}
+            <span className="text-green-400">&apos;LOGOUT&apos;</span>) {"{"}
           </p>
           <p className="ml-8 text-gray-500">
-            // Force redirect on background tabs
+            {`// Force redirect on background tabs`}
           </p>
           <p className="ml-8">
             window.location.href ={" "}
-            <span className="text-green-400">'/login'</span>;
+            <span className="text-green-400">&apos;/login&apos;</span>;
           </p>
           <p className="ml-4">{"}"}</p>
           <p>{"}"};</p>
@@ -384,7 +384,7 @@ export default function Theory() {
               <code className="bg-gray-100 px-1 rounded text-red-500">
                 channel.close()
               </code>{" "}
-              when a component unmounts. If you don't, the channel stays open in
+              when a component unmounts. If you don&apos;t, the channel stays open in
               memory, and the browser will execute the `onmessage` callback
               multiple times (Ghost Messages) whenever a new event is fired.
             </p>
@@ -424,8 +424,8 @@ export default function Theory() {
         <p className="text-gray-500 max-w-2xl mx-auto">
           Polling is like checking your mailbox every 5 seconds.
           <strong> BroadcastChannel </strong> is like having a private radio
-          frequency. It's infinitely more efficient, saves massive amounts of
-          battery and server cost, and provides a truly "Real-Time" user
+          frequency. It&apos;s infinitely more efficient, saves massive amounts of
+          battery and server cost, and provides a truly &quot;Real-Time&quot; user
           experience without the architectural complexity of a WebSockets
           Server.
         </p>

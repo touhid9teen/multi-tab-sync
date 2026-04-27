@@ -1,4 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
+import TransactionForm from "@/components/TransactionForm";
+import TransactionTablePolling from "@/components/TransactionTablePolling";
 
 export default function Dashboard() {
   const queryClient = useQueryClient();

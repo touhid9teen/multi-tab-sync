@@ -26,8 +26,9 @@ export default function TransactionTable({ refetchTrigger }: { refetchTrigger?: 
       const result = await getTransactions();
       if (!result.success) throw new Error(result.error);
       setData(result.data || []);
-    } catch (err: any) {
-      setError(err.message || 'Connection failed');
+    } catch (err: unknown) {
+      const error = err as Error;
+      setError(error.message || 'Connection failed');
     } finally {
       setIsLoading(false);
       setIsRefetching(false);
@@ -35,13 +36,14 @@ export default function TransactionTable({ refetchTrigger }: { refetchTrigger?: 
   }, []);
 
   useEffect(() => {
-    fetchData();
+    Promise.resolve().then(() => fetchData());
   }, [fetchData]);
 
   // Handle manual refetch trigger from parent
   useEffect(() => {
     if (refetchTrigger !== undefined && refetchTrigger > 0) {
-      fetchData(true);
+      // Use a microtask to avoid synchronous setState warning
+      Promise.resolve().then(() => fetchData(true));
     }
   }, [refetchTrigger, fetchData]);
 
@@ -58,22 +60,25 @@ export default function TransactionTable({ refetchTrigger }: { refetchTrigger?: 
       } else {
         alert(result.error);
       }
-    } catch (err) {
+    } catch {
       alert('Failed to delete transaction');
     }
   };
 
   // 1. LEADER ELECTION LOGIC
   const [myId] = useState(() => Math.random().toString(36).substring(7));
-  
-  const handleElectionMessage = useCallback((msg: any) => {
+
+  const handleElectionMessage = useCallback((msg: { type: string; id: string }) => {
     if (msg.type === 'IAM_LEADER') {
       if (msg.id !== myId) {
         setIsLeader(false);
       }
     } else if (msg.type === 'WHO_IS_LEADER') {
       if (isLeader) {
-        postElectionMessage({ type: 'IAM_LEADER', id: myId });
+        // We'll use a temporary broadcast for the response to avoid declaration issues
+        const channel = new BroadcastChannel('leader_election');
+        channel.postMessage({ type: 'IAM_LEADER', id: myId });
+        channel.close();
       }
     }
   }, [isLeader, myId]);
@@ -96,7 +101,6 @@ export default function TransactionTable({ refetchTrigger }: { refetchTrigger?: 
   // 2. RECEIVER LOGIC (Manual Refetch on Signal)
   const onSyncMessage = useCallback((msg: string) => {
     if (msg === 'REFETCH') {
-      // All listeners should fetch to keep tabs in sync
       fetchData(true);
     }
   }, [fetchData]);

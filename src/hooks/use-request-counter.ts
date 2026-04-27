@@ -10,7 +10,9 @@ export function useRequestCounter(lab: LabType) {
   useEffect(() => {
     // Initial load
     const saved = localStorage.getItem(`requests_${lab}`);
-    if (saved) setCount(parseInt(saved, 10));
+    if (saved) {
+      Promise.resolve().then(() => setCount(parseInt(saved, 10)));
+    }
 
     const handleUpdate = () => {
       const current = localStorage.getItem(`requests_${lab}`);

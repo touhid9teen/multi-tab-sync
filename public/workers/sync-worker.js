@@ -37,7 +37,7 @@ function broadcast(message) {
   ports.forEach((p) => {
     try {
       p.postMessage(message);
-    } catch (e) {
+    } catch {
       ports.delete(p);
       connectionCount--;
     }

@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { createTransaction } from '@/actions/transaction.action';
-import { Transaction } from '@/lib/types';
 import { useBroadcastSync } from '@/hooks/use-broadcast-sync';
 
 export default function TransactionForm({ onSuccess }: { onSuccess?: () => void }) {
@@ -42,11 +41,12 @@ export default function TransactionForm({ onSuccess }: { onSuccess?: () => void 
       if (onSuccess) onSuccess();
       
       setTimeout(() => setSuccess(null), 3000);
-    } catch (err: any) {
-      if (err.validationErrors) {
-        setErrors({ general: 'Validation failed', fields: err.validationErrors });
+    } catch (err: unknown) {
+      const error = err as { validationErrors?: Record<string, string[]>; error?: string };
+      if (error.validationErrors) {
+        setErrors({ general: 'Validation failed', fields: error.validationErrors });
       } else {
-        setErrors({ general: err.error || 'Something went wrong' });
+        setErrors({ general: error.error || 'Something went wrong' });
       }
     } finally {
       setIsPending(true);

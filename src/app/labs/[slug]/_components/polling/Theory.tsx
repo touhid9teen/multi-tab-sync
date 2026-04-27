@@ -23,7 +23,7 @@ export default function Theory() {
          
          <div className="p-8 bg-purple-50/30 rounded-[24px] border border-purple-100/50 space-y-4">
            <h4 className="text-lg font-black text-purple-900 tracking-tight">Simplicity</h4>
-           <p className="text-sm text-gray-600 leading-relaxed">Requires no complex cross-tab hooks or background workers. It's a standard feature of TanStack Query.</p>
+           <p className="text-sm text-gray-600 leading-relaxed">Requires no complex cross-tab hooks or background workers. It&apos;s a standard feature of TanStack Query.</p>
          </div>
       </div>
 
@@ -31,10 +31,10 @@ export default function Theory() {
          <div className="absolute top-0 left-0 w-full h-1 bg-purple-600"></div>
          <h3 className="text-3xl font-black tracking-tighter mb-8 text-gray-900">The SWR Configuration</h3>
          <div className="bg-gray-900 p-8 rounded-2xl border border-gray-800 font-mono text-xs leading-relaxed text-purple-200">
-           <p className="text-gray-500 mb-4">// In TransactionTablePolling.tsx</p>
+           <p className="text-gray-500 mb-4">{`// In TransactionTablePolling.tsx`}</p>
            <p><span className="text-purple-400">const</span> result = <span className="text-yellow-400">useQuery</span>({"{"}</p>
-           <p className="ml-4">queryKey: [<span className="text-green-400">'transactions'</span>],</p>
-           <p className="ml-4 text-purple-300 font-bold">refetchInterval: 5000, // 5 seconds</p>
+           <p className="ml-4">queryKey: [<span className="text-green-400">&apos;transactions&apos;</span>],</p>
+           <p className="ml-4 text-purple-300 font-bold">{`refetchInterval: 5000, // 5 seconds`}</p>
            <p className="ml-4">staleTime: 0,</p>
            <p>{"}"});</p>
          </div>

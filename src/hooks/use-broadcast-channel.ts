@@ -10,7 +10,7 @@ import { useEffect, useRef, useCallback } from 'react';
  * @param onMessage - Optional callback executed when a message is received.
  * @returns { postMessage } - A function to broadcast messages to other tabs.
  */
-export function useBroadcastChannel<T = any>(
+export function useBroadcastChannel<T = unknown>(
   channelName: string,
   onMessage?: (data: T) => void
 ) {

@@ -7,7 +7,7 @@ import { WorkerMessage } from '@/hooks/use-worker-sync';
 import { useQueryClient } from '@tanstack/react-query';
 
 interface DashboardProps {
-  onBroadcast: (type: WorkerMessage["type"], payload?: any) => void;
+  onBroadcast: (type: WorkerMessage["type"], payload?: unknown) => void;
 }
 
 export default function Dashboard({ onBroadcast }: DashboardProps) {
