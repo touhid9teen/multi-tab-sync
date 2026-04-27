@@ -68,7 +68,7 @@ export default function TransactionTable({ refetchTrigger }: { refetchTrigger?: 
   // 1. LEADER ELECTION LOGIC
   const [myId] = useState(() => Math.random().toString(36).substring(7));
 
-  const handleElectionMessage = useCallback((msg: { type: string; id: string }) => {
+  const handleElectionMessage = useCallback((msg: { type: string; id?: string }) => {
     if (msg.type === 'IAM_LEADER') {
       if (msg.id !== myId) {
         setIsLeader(false);
@@ -88,7 +88,7 @@ export default function TransactionTable({ refetchTrigger }: { refetchTrigger?: 
   useEffect(() => {
     if (!postElectionMessage) return;
 
-    postElectionMessage({ type: 'WHO_IS_LEADER' });
+    postElectionMessage({ type: 'WHO_IS_LEADER', id: myId });
     
     const timeout = setTimeout(() => {
       setIsLeader(true);
