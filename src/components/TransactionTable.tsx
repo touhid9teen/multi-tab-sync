@@ -1,15 +1,42 @@
 'use client';
 
-import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { getTransactions, deleteTransaction } from '@/actions/transaction.action';
 import { useBroadcastSync } from '@/hooks/use-broadcast-sync';
 import { useCallback, useEffect, useState } from 'react';
 import { incrementRequestCount } from '@/hooks/use-request-counter';
+import { useBroadcastChannel } from '@/hooks/use-broadcast-channel';
+import { Transaction } from '@/lib/types';
 
 export default function TransactionTable() {
-  const queryClient = useQueryClient();
+  const [data, setData] = useState<Transaction[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isRefetching, setIsRefetching] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [isLeader, setIsLeader] = useState(false);
   const { broadcast } = useBroadcastSync();
+
+  // 0. NATIVE FETCH LOGIC
+  const fetchData = useCallback(async (showRefetchUI = false) => {
+    if (showRefetchUI) setIsRefetching(true);
+    else setIsLoading(true);
+    
+    setError(null);
+    try {
+      incrementRequestCount('broadcast');
+      const result = await getTransactions();
+      if (!result.success) throw new Error(result.error);
+      setData(result.data || []);
+    } catch (err: any) {
+      setError(err.message || 'Connection failed');
+    } finally {
+      setIsLoading(false);
+      setIsRefetching(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this entry?')) return;
@@ -17,7 +44,9 @@ export default function TransactionTable() {
     try {
       const result = await deleteTransaction(id);
       if (result.success) {
-        queryClient.invalidateQueries({ queryKey: ['transactions'] });
+        // Manual local refresh
+        fetchData();
+        // Broadcast to other tabs
         broadcast('REFETCH');
       } else {
         alert(result.error);
@@ -28,65 +57,49 @@ export default function TransactionTable() {
   };
 
   // 1. LEADER ELECTION LOGIC
-  useEffect(() => {
-    const electionChannel = new BroadcastChannel('leader_election');
-    const myId = Math.random().toString(36).substring(7);
-    let leaderId: string | null = null;
-
-    const claimLeadership = () => {
-      leaderId = myId;
-      setIsLeader(true);
-      electionChannel.postMessage({ type: 'IAM_LEADER', id: myId });
-    };
-
-    electionChannel.onmessage = (msg) => {
-      if (msg.data.type === 'IAM_LEADER') {
-        if (msg.data.id !== myId) {
-          leaderId = msg.data.id;
-          setIsLeader(false);
-        }
-      } else if (msg.data.type === 'WHO_IS_LEADER') {
-        if (isLeader) {
-          electionChannel.postMessage({ type: 'IAM_LEADER', id: myId });
-        }
+  const [myId] = useState(() => Math.random().toString(36).substring(7));
+  
+  const handleElectionMessage = useCallback((msg: any) => {
+    if (msg.type === 'IAM_LEADER') {
+      if (msg.id !== myId) {
+        setIsLeader(false);
       }
-    };
+    } else if (msg.type === 'WHO_IS_LEADER') {
+      if (isLeader) {
+        postElectionMessage({ type: 'IAM_LEADER', id: myId });
+      }
+    }
+  }, [isLeader, myId]);
 
-    electionChannel.postMessage({ type: 'WHO_IS_LEADER' });
+  const { postMessage: postElectionMessage } = useBroadcastChannel('leader_election', handleElectionMessage);
+
+  useEffect(() => {
+    if (!postElectionMessage) return;
+
+    postElectionMessage({ type: 'WHO_IS_LEADER' });
+    
     const timeout = setTimeout(() => {
-      if (!leaderId) claimLeadership();
+      // If no one claimed leadership, I will.
+      // In a real app, this would be more robust.
+      setIsLeader(true);
+      postElectionMessage({ type: 'IAM_LEADER', id: myId });
     }, 500);
 
-    return () => {
-      electionChannel.close();
-      clearTimeout(timeout);
-    };
-  }, [isLeader]);
+    return () => clearTimeout(timeout);
+  }, [postElectionMessage, myId]);
 
-  // 2. RECEIVER LOGIC
+  // 2. RECEIVER LOGIC (Manual Refetch on Signal)
   const onSyncMessage = useCallback((msg: string) => {
     if (msg === 'REFETCH') {
       if (isLeader) {
-        queryClient.invalidateQueries({ queryKey: ['transactions'] });
+        fetchData(true);
       }
     }
-  }, [queryClient, isLeader]);
+  }, [isLeader, fetchData]);
 
   useBroadcastSync(onSyncMessage);
 
-  // 3. FETCH LOGIC
-  const { data, isLoading, error, refetch, isRefetching } = useQuery({
-    queryKey: ['transactions'],
-    queryFn: async () => {
-      incrementRequestCount('broadcast');
-      const result = await getTransactions();
-      if (!result.success) throw new Error(result.error);
-      return result.data || [];
-    },
-    staleTime: 1000 * 60, 
-  });
-
-  if (isLoading && !data) {
+  if (isLoading && data.length === 0) {
     return (
       <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-12 text-center">
         <div className="animate-spin inline-block w-8 h-8 border-[3px] border-blue-600 border-t-transparent rounded-full mb-4"></div>
@@ -111,7 +124,7 @@ export default function TransactionTable() {
           </div>
         </div>
         <button 
-          onClick={() => refetch()}
+          onClick={() => fetchData(true)}
           className={`p-2.5 rounded-xl transition-all ${
             isRefetching ? 'bg-blue-50 text-blue-600' : 'bg-white border border-gray-100 text-gray-400 hover:text-gray-900 hover:border-gray-200 shadow-sm'
           }`}
@@ -126,7 +139,7 @@ export default function TransactionTable() {
         {error && (
           <div className="p-8 text-center">
             <p className="text-sm text-red-500 bg-red-50 py-3 px-4 rounded-2xl inline-block font-medium border border-red-100">
-              {error instanceof Error ? error.message : 'Connection failed'}
+              {error}
             </p>
           </div>
         )}

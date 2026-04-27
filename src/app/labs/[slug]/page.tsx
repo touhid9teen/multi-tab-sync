@@ -1,11 +1,10 @@
 'use client';
 
-import Link from 'next/link';
-import { useParams, notFound } from 'next/navigation';
-import * as Tabs from "@radix-ui/react-tabs";
+import BackToHome from "@/components/BackToHome";
 import { useBroadcastSync } from "@/hooks/use-broadcast-sync";
 import { useWorkerSync } from "@/hooks/use-worker-sync";
-import BackToHome from "@/components/BackToHome";
+import * as Tabs from "@radix-ui/react-tabs";
+import { notFound, useParams } from 'next/navigation';
 
 // Broadcast Components
 import BroadcastDashboard from "./_components/broadcast/Dashboard";
@@ -22,8 +21,7 @@ import WorkerTheory from "./_components/worker/Theory";
 export default function LabPage() {
   const params = useParams();
   const slug = params.slug as string;
-  
-  const { broadcast: broadcastSync } = useBroadcastSync();
+
   const { broadcast: workerSync } = useWorkerSync();
 
   if (slug === 'broadcast-lab') {
@@ -37,7 +35,7 @@ export default function LabPage() {
               <Tabs.Trigger value="sync-logs" className="px-8 py-3 text-sm font-black rounded-xl text-gray-500 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-xl transition-all duration-300">Detailed Sync Logic</Tabs.Trigger>
             </Tabs.List>
             <Tabs.Content value="dashboard" className="animate-in fade-in slide-in-from-bottom-4 duration-700 outline-none">
-              <BroadcastDashboard onBroadcast={broadcastSync} />
+              <BroadcastDashboard />
             </Tabs.Content>
             <Tabs.Content value="sync-logs" className="animate-in fade-in slide-in-from-bottom-4 duration-700 outline-none">
               <BroadcastTheory />

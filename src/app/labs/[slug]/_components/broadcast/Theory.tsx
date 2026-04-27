@@ -104,65 +104,62 @@ export default function Theory() {
       <section className="space-y-8 bg-white p-12 rounded-[32px] border border-gray-100 shadow-sm relative overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-1 bg-indigo-600"></div>
         <h3 className="text-3xl font-black tracking-tighter text-gray-900">
-          1. The Basic Implementation
+          1. Professional Hook Implementation (SSR-Safe)
         </h3>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+        <div className="grid grid-cols-1 gap-8">
           <div className="space-y-6">
-            <div className="flex items-center gap-4">
-              <div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center font-black text-sm italic text-indigo-600">
-                01
-              </div>
-              <h5 className="text-xl font-bold tracking-tight text-gray-900">
-                The Transmitter (Tab A)
-              </h5>
-            </div>
-            <div className="bg-gray-900 p-6 rounded-2xl border border-gray-800 font-mono text-xs leading-relaxed text-indigo-200">
-              <p className="text-gray-500 mb-2">// In TransactionForm.tsx</p>
-              <p>
-                <span className="text-pink-400">const</span> channel ={" "}
-                <span className="text-yellow-400">new</span> BroadcastChannel(
-                <span className="text-green-400">'sync'</span>);
-              </p>
-              <p>
-                channel.<span className="text-blue-400">postMessage</span>(
-                <span className="text-green-400">'REFETCH'</span>);
-              </p>
-            </div>
-            <p className="text-sm text-gray-500 leading-relaxed">
-              When a user acts (like submitting a form), Tab A saves the data to
-              the DB. Once successful, it broadcasts a "REFETCH" signal to the
-              shared channel.
+            <p className="text-sm text-gray-500 leading-relaxed max-w-3xl">
+              In modern Next.js/React apps, manual lifecycle management is error-prone. We use a custom 
+              <code className="text-indigo-600 font-bold bg-indigo-50 px-2 py-0.5 rounded ml-1 mr-1">useBroadcastChannel</code> 
+              hook that automatically handles opening, message listening, and closing to prevent memory leaks.
             </p>
+            <div className="bg-gray-900 p-8 rounded-3xl border border-gray-800 font-mono text-xs leading-relaxed shadow-xl">
+              <p className="text-indigo-400 mb-4">// hooks/use-broadcast-channel.ts</p>
+              <p><span className="text-pink-400">export function</span> <span className="text-blue-400">useBroadcastChannel</span>(name, onMessage) {"{"}</p>
+              <p className="ml-4 text-gray-500">// SSR Safety: Only runs on the client</p>
+              <p className="ml-4"><span className="text-blue-400">useEffect</span>(() {"=>"} {"{"}</p>
+              <p className="ml-8"><span className="text-pink-400">const</span> channel = <span className="text-yellow-400">new</span> BroadcastChannel(name);</p>
+              <p className="ml-8">channel.onmessage = (e) {"=>"} onMessage(e.data);</p>
+              <p className="ml-8"><span className="text-pink-400">return</span> () {"=>"} channel.<span className="text-blue-400">close</span>(); <span className="text-gray-500">// Critical Cleanup</span></p>
+              <p className="ml-4">{"}"}, [name]);</p>
+              <br />
+              <p className="ml-4"><span className="text-pink-400">return</span> {"{"} postMessage: (msg) {"=>"} channel.<span className="text-blue-400">postMessage</span>(msg) {"}"};</p>
+              <p>{"}"}</p>
+            </div>
           </div>
 
-          <div className="space-y-6">
-            <div className="flex items-center gap-4">
-              <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center font-black text-sm italic text-green-600">
-                02
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mt-4">
+            <div className="space-y-6">
+              <div className="flex items-center gap-4">
+                <div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center font-black text-sm italic text-indigo-600">
+                  01
+                </div>
+                <h5 className="text-xl font-bold tracking-tight text-gray-900">
+                  Usage: Dispatching
+                </h5>
               </div>
-              <h5 className="text-xl font-bold tracking-tight text-gray-900">
-                The Receiver (Tab B)
-              </h5>
+              <div className="bg-gray-900 p-6 rounded-2xl border border-gray-800 font-mono text-xs leading-relaxed text-indigo-200">
+                <p><span className="text-pink-400">const</span> {"{"} postMessage {"}"} = useBroadcastChannel(<span className="text-green-400">'sync'</span>);</p>
+                <p>postMessage(<span className="text-green-400">'REFETCH'</span>);</p>
+              </div>
             </div>
-            <div className="bg-gray-900 p-6 rounded-2xl border border-gray-800 font-mono text-xs leading-relaxed text-green-200">
-              <p className="text-gray-500 mb-2">// In TransactionTable.tsx</p>
-              <p>
-                channel.<span className="text-blue-400">onmessage</span> = (e) =
-                {">"} {"{"}
-              </p>
-              <p className="ml-4">
-                queryClient.
-                <span className="text-blue-400">invalidateQueries</span>([
-                <span className="text-green-400">'txs'</span>]);
-              </p>
-              <p>{"}"};</p>
+
+            <div className="space-y-6">
+              <div className="flex items-center gap-4">
+                <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center font-black text-sm italic text-green-600">
+                  02
+                </div>
+                <h5 className="text-xl font-bold tracking-tight text-gray-900">
+                  Usage: Listening
+                </h5>
+              </div>
+              <div className="bg-gray-900 p-6 rounded-2xl border border-gray-800 font-mono text-xs leading-relaxed text-green-200">
+                <p>useBroadcastChannel(<span className="text-green-400">'sync'</span>, (msg) {"=>"} {"{"}</p>
+                <p className="ml-4">queryClient.<span className="text-blue-400">invalidateQueries</span>();</p>
+                <p>{"}"});</p>
+              </div>
             </div>
-            <p className="text-sm text-gray-500 leading-relaxed">
-              Tab B is constantly listening. When it hears the signal, it
-              invalidates its local cache, triggering a silent background
-              refetch.
-            </p>
           </div>
         </div>
       </section>

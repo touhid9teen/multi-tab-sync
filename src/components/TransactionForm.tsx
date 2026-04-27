@@ -1,47 +1,76 @@
 'use client';
 
 import { useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { createTransaction } from '@/actions/transaction.action';
 import { Transaction } from '@/lib/types';
+import { useBroadcastSync } from '@/hooks/use-broadcast-sync';
 
-export default function TransactionForm({ onSuccess }: { onSuccess?: () => void }) {
+export default function TransactionForm({ onSuccess, isNative = false }: { onSuccess?: () => void; isNative?: boolean }) {
   const [amount, setAmount] = useState<string>('100');
   const [description, setDescription] = useState('Grocery shopping');
+  const [isPending, setIsPending] = useState(false);
   const queryClient = useQueryClient();
+  const { broadcast } = useBroadcastSync();
   
   const [errors, setErrors] = useState<{ general?: string; fields?: Record<string, string[]> }>({});
   const [success, setSuccess] = useState<string | null>(null);
 
-  // OPTIMISTIC UI: useMutation
-  const mutation = useMutation({
-    mutationFn: async (data: { amount: number; description: string }) => {
-      const result = await createTransaction(data);
-      if (!result.success) throw result;
-      return result.data;
-    },
-    onMutate: async (newTx) => {
-      await queryClient.cancelQueries({ queryKey: ['transactions'] });
-      const previousTxs = queryClient.getQueryData<Transaction[]>(['transactions']);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrors({});
+    setSuccess(null);
+    setIsPending(true);
 
+    const data = { amount: parseFloat(amount), description };
+
+    // 1. OPTIMISTIC UPDATE (TanStack only)
+    let previousTxs: Transaction[] | undefined;
+    if (!isNative) {
+      await queryClient.cancelQueries({ queryKey: ['transactions'] });
+      previousTxs = queryClient.getQueryData<Transaction[]>(['transactions']);
+      
       if (previousTxs) {
         queryClient.setQueryData<Transaction[]>(['transactions'], [
           {
             id: 'optimistic-' + Date.now(),
-            amount: newTx.amount,
-            description: newTx.description,
-            status: 'pending', // MARKED AS PENDING
+            amount: data.amount,
+            description: data.description,
+            status: 'pending',
             created_at: new Date().toISOString(),
           },
           ...previousTxs,
         ]);
       }
+    }
 
-      return { previousTxs };
-    },
-    onError: (err: any, newTx, context) => {
-      if (context?.previousTxs) {
-        queryClient.setQueryData(['transactions'], context.previousTxs);
+    try {
+      // 2. NATIVE SERVER ACTION
+      const result = await createTransaction(data);
+      
+      if (!result.success) {
+        throw result;
+      }
+
+      // 3. NATIVE BROADCAST SIGNAL
+      broadcast('REFETCH');
+
+      // 4. UI FEEDBACK & CLEANUP
+      if (onSuccess) onSuccess();
+      setSuccess('Transaction saved successfully!');
+      setAmount('');
+      setDescription('');
+      
+      // 5. LOCAL REFETCH (Native or TanStack)
+      if (!isNative) {
+        queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      }
+      
+      setTimeout(() => setSuccess(null), 3000);
+    } catch (err: any) {
+      // ROLLBACK on error (TanStack only)
+      if (!isNative && previousTxs) {
+        queryClient.setQueryData(['transactions'], previousTxs);
       }
       
       if (err.validationErrors) {
@@ -49,24 +78,10 @@ export default function TransactionForm({ onSuccess }: { onSuccess?: () => void 
       } else {
         setErrors({ general: err.error || 'Something went wrong' });
       }
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['transactions'] });
-    },
-    onSuccess: () => {
-      if (onSuccess) onSuccess();
-      setSuccess('Transaction saved successfully!');
-      setAmount('');
-      setDescription('');
-      setTimeout(() => setSuccess(null), 3000);
-    },
-  });
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrors({});
-    setSuccess(null);
-    mutation.mutate({ amount: parseFloat(amount), description });
+    } finally {
+      setIsPending(true);
+      setTimeout(() => setIsPending(false), 500);
+    }
   };
 
   return (
@@ -137,14 +152,14 @@ export default function TransactionForm({ onSuccess }: { onSuccess?: () => void 
 
         <button
           type="submit"
-          disabled={mutation.isPending}
+          disabled={isPending}
           className={`w-full py-4 px-6 rounded-2xl text-white font-black tracking-tight transition-all shadow-lg active:scale-[0.98] ${
-            mutation.isPending 
+            isPending 
               ? 'bg-gray-400 cursor-not-allowed shadow-none' 
               : 'bg-gray-900 hover:bg-black shadow-gray-200 hover:shadow-gray-300'
           }`}
         >
-          {mutation.isPending ? (
+          {isPending ? (
             <span className="flex items-center justify-center gap-2">
               <svg className="animate-spin h-5 w-5 text-white" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
